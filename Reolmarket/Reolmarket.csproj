@@ -12,8 +12,6 @@
   <ItemGroup>
     <Folder Include="Domain\" />
     <Folder Include="Infrastructure\" />
-    <Folder Include="Views\" />
-    <Folder Include="ViewModels\" />
   </ItemGroup>
 
 </Project>

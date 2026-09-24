@@ -1,7 +1,9 @@
 using System.Collections.ObjectModel;
+using System.Windows;
 using System.Windows.Input;
 using Reolmarket.Domain;
 using Reolmarket.Infrastructure;
+using Reolmarket.Views;
 
 namespace Reolmarket.ViewModels;
 
@@ -81,8 +83,24 @@ public class MainViewModel : ViewModelBase
 
     private void ExecuteAddTenant(object? parameter)
     {
-        // TODO: Implement logic to add a new tenant
-        StatusMessage = "Add Tenant feature";
+        var window = new AddTenantWindow();
+        if (window.ShowDialog() == true)
+        {
+            var viewModel = window.DataContext as AddTenantViewModel;
+            if (viewModel != null)
+            {
+                var newTenant = new Tenant
+                {
+                    TenantId = Tenants.Count + 1,
+                    Name = viewModel.Name,
+                    Email = viewModel.Email,
+                    Phone = viewModel.Phone
+                };
+
+                Tenants.Add(newTenant);
+                StatusMessage = $"Tenant '{newTenant.Name}' added successfully";
+            }
+        }
     }
 
     private void ExecuteAddRental(object? parameter)
