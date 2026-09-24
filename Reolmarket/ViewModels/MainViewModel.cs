@@ -105,6 +105,28 @@ public class MainViewModel : ViewModelBase
 
     private void ExecuteAddRental(object? parameter)
     {
-        StatusMessage = "Add Rental feature";
+        var window = new AddRentalWindow();
+        if (window.ShowDialog() == true)
+        {
+            var viewModel = window.DataContext as AddRentalViewModel;
+            if (viewModel != null && viewModel.TenantId > 0 && viewModel.ShelfId > 0)
+            {
+                var tenant = Tenants.FirstOrDefault(t => t.TenantId == viewModel.TenantId);
+
+                var newRental = new Rental
+                {
+                    RentalId = Rentals.Count + 1,
+                    TenantId = viewModel.TenantId,
+                    Tenant = tenant,
+                    ShelfId = viewModel.ShelfId,
+                    StartDate = viewModel.StartDate,
+                    EndDate = viewModel.EndDate,
+                    MonthlyRent = viewModel.MonthlyRent
+                };
+
+                Rentals.Add(newRental);
+                StatusMessage = $"Rental added successfully for tenant ID {newRental.TenantId}";
+            }
+        }
     }
 }
