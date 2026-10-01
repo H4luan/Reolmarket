@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Reolmarket.Domain
 {
@@ -11,6 +12,8 @@ namespace Reolmarket.Domain
 
         public ShelfLayout Layout { get; set; }
 
+        public string Location { get; set; } = string.Empty;
+
         public List<Rental> Rentals { get; set; } = new();
 
         public bool IsAvailable(DateTime date)
@@ -19,5 +22,7 @@ namespace Reolmarket.Domain
                 r.StartDate <= date &&
                 (r.EndDate == null || r.EndDate >= date));
         }
+
+        public bool IsAvailableNow => IsAvailable(DateTime.Today);
     }
 }
