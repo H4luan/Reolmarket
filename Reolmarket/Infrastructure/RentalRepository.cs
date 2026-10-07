@@ -94,6 +94,78 @@ public class RentalRepository
         rental.RentalId = (int)command.ExecuteScalar()!;
     }
 
+
+    public void AddAndRepriceActiveRentals(Rental rental)
+    {
+        using SqlConnection connection =
+            DatabaseConnection.CreateConnection();
+
+        connection.Open();
+
+        using SqlTransaction transaction = connection.BeginTransaction();
+
+        try
+        {
+            using SqlCommand updateCommand = connection.CreateCommand();
+            updateCommand.Transaction = transaction;
+            updateCommand.CommandText =
+                """
+            UPDATE RentalAgreement
+            SET Price = @Price
+            WHERE ShelfRenterID = @ShelfRenterID
+              AND StartDate <= @StartDate
+              AND (EndDate IS NULL OR EndDate >= @StartDate);
+            """;
+
+            updateCommand.Parameters.AddWithValue("@Price", rental.MonthlyRent);
+            updateCommand.Parameters.AddWithValue(
+                "@ShelfRenterID",
+                rental.TenantId);
+            updateCommand.Parameters.AddWithValue(
+                "@StartDate",
+                rental.StartDate.Date);
+
+            updateCommand.ExecuteNonQuery();
+
+            using SqlCommand insertCommand = connection.CreateCommand();
+            insertCommand.Transaction = transaction;
+            insertCommand.CommandText =
+                """
+            INSERT INTO RentalAgreement
+                (StartDate, EndDate, Price, ShelfRenterID, ShelfID)
+            OUTPUT INSERTED.RentalAgreementID
+            VALUES
+                (@StartDate, @EndDate, @Price, @ShelfRenterID, @ShelfID);
+            """;
+
+            insertCommand.Parameters.AddWithValue(
+                "@StartDate",
+                rental.StartDate.Date);
+            insertCommand.Parameters.AddWithValue(
+                "@EndDate",
+                (object?)rental.EndDate?.Date ?? DBNull.Value);
+            insertCommand.Parameters.AddWithValue(
+                "@Price",
+                rental.MonthlyRent);
+            insertCommand.Parameters.AddWithValue(
+                "@ShelfRenterID",
+                rental.TenantId);
+            insertCommand.Parameters.AddWithValue(
+                "@ShelfID",
+                rental.ShelfId);
+
+            rental.RentalId =
+                Convert.ToInt32(insertCommand.ExecuteScalar());
+
+            transaction.Commit();
+        }
+        catch
+        {
+            transaction.Rollback();
+            throw;
+        }
+    }
+
     public bool IsShelfAvailable(
     int shelfId,
     DateTime startDate,

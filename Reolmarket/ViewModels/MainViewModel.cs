@@ -156,7 +156,7 @@ public class MainViewModel : ViewModelBase
             return;
         }
 
-        var window = new AddRentalWindow(Tenants, shelves);
+        var window = new AddRentalWindow(Tenants, shelves, Rentals);
 
         if (window.ShowDialog() != true)
         {
@@ -213,7 +213,17 @@ public class MainViewModel : ViewModelBase
                 MonthlyRent = viewModel.MonthlyRent
             };
 
-            _rentalRepository.Add(newRental);
+            _rentalRepository.AddAndRepriceActiveRentals(newRental);
+
+            foreach (Rental existingRental in Rentals)
+            {
+                if (existingRental.TenantId == newRental.TenantId &&
+                    existingRental.IsActive(newRental.StartDate.Date))
+                {
+                    existingRental.MonthlyRent = newRental.MonthlyRent;
+                }
+            }
+
             Rentals.Add(newRental);
 
             StatusMessage =

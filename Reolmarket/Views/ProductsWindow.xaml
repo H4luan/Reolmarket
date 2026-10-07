@@ -1,0 +1,124 @@
+﻿<Window x:Class="Reolmarket.Views.ProductsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Produktadministration"
+        Height="600"
+        Width="950"
+        WindowStartupLocation="CenterOwner">
+
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0"
+                    Orientation="Horizontal"
+                    Margin="0,0,0,12">
+            <Button Content="Nyt produkt"
+                    Command="{Binding AddProductCommand}"
+                    Padding="12,6"
+                    Margin="0,0,8,0"/>
+
+            <Button Content="Gem"
+                    Command="{Binding SaveProductCommand}"
+                    Padding="12,6"
+                    Margin="0,0,8,0"/>
+
+            <Button Content="Slet"
+                    Command="{Binding DeleteProductCommand}"
+                    Padding="12,6"
+                    Margin="0,0,8,0"/>
+
+            <Button Content="Genindlæs"
+                    Command="{Binding ReloadProductsCommand}"
+                    Padding="12,6"/>
+        </StackPanel>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="3*"/>
+                <ColumnDefinition Width="2*"/>
+            </Grid.ColumnDefinitions>
+
+            <DataGrid Grid.Column="0"
+                      ItemsSource="{Binding Products}"
+                      SelectedItem="{Binding SelectedProduct, Mode=TwoWay}"
+                      AutoGenerateColumns="False"
+                      CanUserAddRows="False"
+                      Margin="0,0,12,0">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="ID"
+                                        Binding="{Binding ProductId}"
+                                        IsReadOnly="True"
+                                        Width="55"/>
+
+                    <DataGridTextColumn Header="Navn"
+                                        Binding="{Binding Name}"
+                                        IsReadOnly="True"
+                                        Width="*"/>
+
+                    <DataGridTextColumn Header="Stregkode"
+                                        Binding="{Binding Barcode}"
+                                        IsReadOnly="True"
+                                        Width="*"/>
+
+                    <DataGridTextColumn Header="Pris"
+                                        Binding="{Binding Price, StringFormat={}{0:N2}}"
+                                        IsReadOnly="True"
+                                        Width="85"/>
+
+                    <DataGridTextColumn Header="Lager"
+                                        Binding="{Binding StockQuantity}"
+                                        IsReadOnly="True"
+                                        Width="65"/>
+
+                    <DataGridTextColumn Header="Reol-ID"
+                                        Binding="{Binding ShelfId}"
+                                        IsReadOnly="True"
+                                        Width="65"/>
+                </DataGrid.Columns>
+            </DataGrid>
+
+            <StackPanel Grid.Column="1">
+                <TextBlock Text="Produktdetaljer"
+                           FontSize="18"
+                           FontWeight="Bold"
+                           Margin="0,0,0,16"/>
+
+                <TextBlock Text="Navn"/>
+                <TextBox Text="{Binding SelectedProduct.Name,
+                                        UpdateSourceTrigger=PropertyChanged}"
+                         Margin="0,4,0,12"/>
+
+                <TextBlock Text="Stregkode"/>
+                <TextBox Text="{Binding SelectedProduct.Barcode,
+                                        UpdateSourceTrigger=PropertyChanged}"
+                         Margin="0,4,0,12"/>
+
+                <TextBlock Text="Pris"/>
+                <TextBox Text="{Binding SelectedProduct.Price,
+                                        UpdateSourceTrigger=PropertyChanged}"
+                         Margin="0,4,0,12"/>
+
+                <TextBlock Text="Antal på lager"/>
+                <TextBox Text="{Binding SelectedProduct.StockQuantity,
+                                        UpdateSourceTrigger=PropertyChanged}"
+                         Margin="0,4,0,12"/>
+
+                <TextBlock Text="Reol"/>
+                <ComboBox ItemsSource="{Binding Shelves}"
+                          DisplayMemberPath="ShelfNumber"
+                          SelectedValuePath="ShelfId"
+                          SelectedValue="{Binding SelectedProduct.ShelfId,
+                                                   UpdateSourceTrigger=PropertyChanged}"
+                          Margin="0,4,0,12"/>
+            </StackPanel>
+        </Grid>
+
+        <TextBlock Grid.Row="2"
+                   Text="{Binding StatusMessage}"
+                   Margin="0,12,0,0"/>
+    </Grid>
+</Window>

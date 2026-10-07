@@ -20,4 +20,13 @@ public partial class MainWindow : Window
 
         shelvesWindow.ShowDialog();
     }
+    private void OpenProducts_Click(object sender, RoutedEventArgs e)
+    {
+        var productsWindow = new ProductsWindow
+        {
+            Owner = this
+        };
+
+        productsWindow.ShowDialog();
+    }
 }
