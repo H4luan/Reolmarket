@@ -1,4 +1,4 @@
-﻿using Microsoft.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using Reolmarket.Domain;
 
 namespace Reolmarket.Infrastructure;
@@ -17,9 +17,10 @@ public class ProductRepository
         using SqlCommand command = connection.CreateCommand();
         command.CommandText =
             """
-            SELECT ProductID, Name, Price, Barcode, StockQuantity, ShelfID
-            FROM Product
-            ORDER BY Name;
+            SELECT p.ProductID, p.Name, p.Price, p.Barcode, p.StockQuantity, p.ShelfID, s.Number
+            FROM Product AS p
+            INNER JOIN Shelf AS s ON s.ShelfID = p.ShelfID
+            ORDER BY p.Name;
             """;
 
         using SqlDataReader reader = command.ExecuteReader();
@@ -33,7 +34,8 @@ public class ProductRepository
                 Price = reader.GetDecimal(2),
                 Barcode = reader.GetString(3),
                 StockQuantity = reader.GetInt32(4),
-                ShelfId = reader.GetInt32(5)
+                ShelfId = reader.GetInt32(5),
+                Shelf = new Shelf { ShelfId = reader.GetInt32(5), ShelfNumber = reader.GetInt32(6) }
             });
         }
 

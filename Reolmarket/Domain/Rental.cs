@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace Reolmarket.Domain
@@ -20,6 +20,8 @@ namespace Reolmarket.Domain
         public DateTime? EndDate { get; set; }
 
         public decimal MonthlyRent { get; set; }
+
+        public PaymentMethod PaymentMethod { get; set; } = PaymentMethod.Cash;
 
         public List<Item> Items { get; set; } = new();
 

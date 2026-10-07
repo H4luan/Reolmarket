@@ -1,4 +1,4 @@
-﻿using Microsoft.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using Reolmarket.Domain;
 
 namespace Reolmarket.Infrastructure;
@@ -25,7 +25,8 @@ public class RentalRepository
                 s.Number,
                 ra.StartDate,
                 ra.EndDate,
-                ra.Price
+                ra.Price,
+                ra.PaymentMethod
             FROM RentalAgreement AS ra
             INNER JOIN ShelfRenter AS sr
                 ON sr.ShelfRenterID = ra.ShelfRenterID
@@ -59,7 +60,8 @@ public class RentalRepository
                 EndDate = reader.IsDBNull(6)
                     ? null
                     : reader.GetDateTime(6),
-                MonthlyRent = reader.GetDecimal(7)
+                MonthlyRent = reader.GetDecimal(7),
+                PaymentMethod = Enum.Parse<PaymentMethod>(reader.GetString(8))
             });
         }
 
@@ -77,10 +79,10 @@ public class RentalRepository
         command.CommandText =
             """
             INSERT INTO RentalAgreement
-                (StartDate, EndDate, Price, ShelfRenterID, ShelfID)
+                (StartDate, EndDate, Price, ShelfRenterID, ShelfID, PaymentMethod)
             OUTPUT INSERTED.RentalAgreementID
             VALUES
-                (@StartDate, @EndDate, @Price, @ShelfRenterID, @ShelfID);
+                (@StartDate, @EndDate, @Price, @ShelfRenterID, @ShelfID, @PaymentMethod);
             """;
 
         command.Parameters.AddWithValue("@StartDate", rental.StartDate);
@@ -90,6 +92,8 @@ public class RentalRepository
         command.Parameters.AddWithValue("@Price", rental.MonthlyRent);
         command.Parameters.AddWithValue("@ShelfRenterID", rental.TenantId);
         command.Parameters.AddWithValue("@ShelfID", rental.ShelfId);
+
+        command.Parameters.AddWithValue("@PaymentMethod", rental.PaymentMethod.ToString());
 
         rental.RentalId = (int)command.ExecuteScalar()!;
     }
@@ -132,10 +136,10 @@ public class RentalRepository
             insertCommand.CommandText =
                 """
             INSERT INTO RentalAgreement
-                (StartDate, EndDate, Price, ShelfRenterID, ShelfID)
+                (StartDate, EndDate, Price, ShelfRenterID, ShelfID, PaymentMethod)
             OUTPUT INSERTED.RentalAgreementID
             VALUES
-                (@StartDate, @EndDate, @Price, @ShelfRenterID, @ShelfID);
+                (@StartDate, @EndDate, @Price, @ShelfRenterID, @ShelfID, @PaymentMethod);
             """;
 
             insertCommand.Parameters.AddWithValue(
@@ -154,6 +158,8 @@ public class RentalRepository
                 "@ShelfID",
                 rental.ShelfId);
 
+
+            insertCommand.Parameters.AddWithValue("@PaymentMethod", rental.PaymentMethod.ToString());
             rental.RentalId =
                 Convert.ToInt32(insertCommand.ExecuteScalar());
 
@@ -215,7 +221,8 @@ public class RentalRepository
                 EndDate = @EndDate,
                 Price = @Price,
                 ShelfRenterID = @ShelfRenterID,
-                ShelfID = @ShelfID
+                ShelfID = @ShelfID,
+                PaymentMethod = @PaymentMethod
             WHERE RentalAgreementID = @RentalAgreementID;
             """;
 
@@ -229,6 +236,8 @@ public class RentalRepository
         command.Parameters.AddWithValue("@Price", rental.MonthlyRent);
         command.Parameters.AddWithValue("@ShelfRenterID", rental.TenantId);
         command.Parameters.AddWithValue("@ShelfID", rental.ShelfId);
+
+        command.Parameters.AddWithValue("@PaymentMethod", rental.PaymentMethod.ToString());
 
         int rowsUpdated = command.ExecuteNonQuery();
 

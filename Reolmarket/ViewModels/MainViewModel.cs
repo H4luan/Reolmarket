@@ -210,7 +210,8 @@ public class MainViewModel : ViewModelBase
                 ShelfId = viewModel.ShelfId,
                 StartDate = viewModel.StartDate,
                 EndDate = viewModel.EndDate,
-                MonthlyRent = viewModel.MonthlyRent
+                MonthlyRent = viewModel.MonthlyRent,
+                PaymentMethod = viewModel.SelectedPaymentMethod
             };
 
             _rentalRepository.AddAndRepriceActiveRentals(newRental);

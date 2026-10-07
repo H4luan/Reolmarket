@@ -16,10 +16,51 @@ public class AddRentalViewModel : ViewModelBase
     private DateTime _startDate = DateTime.Today;
     private DateTime? _endDate;
     private decimal _monthlyRent;
+    private PaymentMethod _selectedPaymentMethod = PaymentMethod.Cash;
     private bool _dialogResult;
+    private Shelf? _selectedNeighborShelf;
+    private string _neighborMessage =
+        "Vælg en lejer for at se mulige naboreoler.";
 
     public ObservableCollection<Tenant> Tenants { get; }
     public ObservableCollection<Shelf> Shelves { get; }
+    public ObservableCollection<Shelf> NeighborShelves { get; } = new();
+    public ObservableCollection<PaymentMethod> PaymentMethods { get; } = new()
+    { PaymentMethod.Cash, PaymentMethod.MobilePay };
+
+    public PaymentMethod SelectedPaymentMethod
+    {
+        get => _selectedPaymentMethod;
+        set => SetProperty(ref _selectedPaymentMethod, value);
+    }
+
+
+    public Shelf? SelectedNeighborShelf
+    {
+        get => _selectedNeighborShelf;
+        set
+        {
+            if (SetProperty(ref _selectedNeighborShelf, value) &&
+                value is not null)
+            {
+                ShelfId = value.ShelfId;
+            }
+        }
+    }
+
+    public string NeighborMessage
+    {
+        get => _neighborMessage;
+        set => SetProperty(ref _neighborMessage, value);
+    }
+
+    
+
+    public int ShelfId
+    {
+        get => _shelfId;
+        set => SetProperty(ref _shelfId, value);
+    }
 
     public int TenantId
     {
@@ -29,14 +70,9 @@ public class AddRentalViewModel : ViewModelBase
             if (SetProperty(ref _tenantId, value))
             {
                 UpdateMonthlyRent();
+                UpdateNeighborShelves();
             }
         }
-    }
-
-    public int ShelfId
-    {
-        get => _shelfId;
-        set => SetProperty(ref _shelfId, value);
     }
 
     public DateTime StartDate
@@ -47,6 +83,7 @@ public class AddRentalViewModel : ViewModelBase
             if (SetProperty(ref _startDate, value))
             {
                 UpdateMonthlyRent();
+                UpdateNeighborShelves();
             }
         }
     }
@@ -54,7 +91,13 @@ public class AddRentalViewModel : ViewModelBase
     public DateTime? EndDate
     {
         get => _endDate;
-        set => SetProperty(ref _endDate, value);
+        set
+        {
+            if (SetProperty(ref _endDate, value))
+            {
+                UpdateNeighborShelves();
+            }
+        }
     }
 
     public decimal MonthlyRent
@@ -139,5 +182,61 @@ public class AddRentalViewModel : ViewModelBase
     {
         DialogResult = false;
         RequestClose?.Invoke();
+    }
+
+    private void UpdateNeighborShelves()
+    {
+        NeighborShelves.Clear();
+        SelectedNeighborShelf = null;
+
+        if (TenantId <= 0)
+        {
+            NeighborMessage = "Vælg en lejer for at se mulige naboreoler.";
+            return;
+        }
+
+        List<int> tenantShelfNumbers = _existingRentals
+            .Where(rental =>
+                rental.TenantId == TenantId &&
+                rental.IsActive(StartDate.Date))
+            .Select(rental =>
+                Shelves.FirstOrDefault(
+                    shelf => shelf.ShelfId == rental.ShelfId)?.ShelfNumber)
+            .Where(number => number.HasValue)
+            .Select(number => number.GetValueOrDefault())
+            .ToList();
+
+        if (tenantShelfNumbers.Count == 0)
+        {
+            NeighborMessage =
+                "Lejeren har ingen aktiv reol på den valgte startdato.";
+            return;
+        }
+
+        DateTime requestedEndDate =
+            EndDate?.Date ?? DateTime.MaxValue.Date;
+
+        List<Shelf> availableNeighbors = Shelves
+            .Where(shelf =>
+                tenantShelfNumbers.Any(existingNumber =>
+                    ShelfLayoutMap.AreAdjacent(
+                        shelf.ShelfNumber,
+                        existingNumber)))
+            .Where(shelf => !_existingRentals.Any(rental =>
+                rental.ShelfId == shelf.ShelfId &&
+                rental.StartDate.Date <= requestedEndDate &&
+                (rental.EndDate is null ||
+                 rental.EndDate.Value.Date >= StartDate.Date)))
+            .OrderBy(shelf => shelf.ShelfNumber)
+            .ToList();
+
+        foreach (Shelf shelf in availableNeighbors)
+        {
+            NeighborShelves.Add(shelf);
+        }
+
+        NeighborMessage = NeighborShelves.Count == 0
+            ? "Der er ingen ledige naboreoler i den valgte periode."
+            : $"Ledige naboreoler: {string.Join(", ", NeighborShelves.Select(shelf => shelf.ShelfNumber))}.";
     }
 }

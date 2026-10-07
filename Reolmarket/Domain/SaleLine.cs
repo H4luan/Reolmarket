@@ -1,19 +1,22 @@
-﻿using System;
+namespace Reolmarket.Domain;
 
-namespace Reolmarket.Domain
+public class SaleLine
 {
-    public class SaleLine
-    {
-        public int SaleLineId { get; set; }
+    public int SaleLineId { get; set; }
 
-        public int SaleId { get; set; }
+    public int SaleId { get; set; }
 
-        public Sale? Sale { get; set; }
+    public Sale? Sale { get; set; }
 
-        public int ItemId { get; set; }
+    public int ProductId { get; set; }
 
-        public Item? Item { get; set; }
+    public int ShelfId { get; set; }
 
-        public decimal PriceAtSale { get; set; }
-    }
+    public string? Comment { get; set; }
+
+    public Product? Product { get; set; }
+
+    public int Quantity { get; set; }
+
+    public decimal SalePrice { get; set; }
 }

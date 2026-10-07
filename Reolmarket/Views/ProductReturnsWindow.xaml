@@ -1,0 +1,64 @@
+<Window x:Class="Reolmarket.Views.ProductReturnsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Registrér retur"
+        Height="360"
+        Width="680"
+        WindowStartupLocation="CenterOwner">
+    <Grid Margin="18">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0"
+                   Text="Vælg en vare fra et tidligere salg:"
+                   FontWeight="Bold"
+                   Margin="0,0,0,8"/>
+        <ComboBox Grid.Row="1"
+                  ItemsSource="{Binding SaleLines}"
+                  SelectedItem="{Binding SelectedSaleLine}"
+                  DisplayMemberPath="DisplayText"
+                  Padding="6"
+                  Margin="0,0,0,14"/>
+
+        <StackPanel Grid.Row="2"
+                    Orientation="Horizontal"
+                    Margin="0,0,0,12">
+            <TextBlock Text="Antal, der returneres:"
+                       VerticalAlignment="Center"
+                       Margin="0,0,8,0"/>
+            <TextBox Width="80"
+                     Text="{Binding QuantityToReturn, UpdateSourceTrigger=LostFocus}"/>
+        </StackPanel>
+
+        <StackPanel Grid.Row="3"
+                    Orientation="Horizontal"
+                    Margin="0,0,0,12">
+            <TextBlock Text="Kommentar:"
+                       VerticalAlignment="Center"
+                       Margin="0,0,8,0"/>
+            <TextBox Width="420"
+                     MaxLength="100"
+                     Text="{Binding Comment, UpdateSourceTrigger=PropertyChanged}"/>
+        </StackPanel>
+
+        <StackPanel Grid.Row="4">
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Right"
+                        Margin="0,0,0,10">
+                <Button Content="Genindlæs"
+                        Command="{Binding ReloadCommand}"
+                        Padding="12,6"
+                        Margin="0,0,8,0"/>
+                <Button Content="Gem retur"
+                        Command="{Binding SaveReturnCommand}"
+                        Padding="12,6"/>
+            </StackPanel>
+            <TextBlock Text="{Binding StatusMessage}"/>
+        </StackPanel>
+    </Grid>
+</Window>

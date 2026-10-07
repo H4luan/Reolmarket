@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace Reolmarket.Domain
@@ -12,33 +12,40 @@ namespace Reolmarket.Domain
         public PaymentMethod PaymentMethod { get; set; }
 
         public List<SaleLine> Lines { get; set; } = new();
+        public int EmployeeId { get; set; }
 
-        public decimal TotalAmount => Lines.Sum(line => line.PriceAtSale);
+        public decimal TotalAmount =>
+            Lines.Sum(line => line.Quantity * line.SalePrice);
 
-        public void AddItem(Item item)
+        public void AddProduct(Product product, int quantity)
         {
-            if (item.IsSold)
+            if (quantity <= 0)
             {
-                throw new InvalidOperationException(
-                    "Varen er allerede solgt og kan ikke tilføjes til salget.");
+                throw new ArgumentOutOfRangeException(
+                    nameof(quantity),
+                    "Antallet skal være større end 0.");
             }
 
-            bool alreadyInCart = Lines.Any(line => line.ItemId == item.ItemId);
-
-            if (alreadyInCart)
+            if (quantity > product.StockQuantity)
             {
                 throw new InvalidOperationException(
-                    "Varen findes allerede i kundens kurv.");
+                    "Der er ikke nok af produktet på lager.");
             }
 
-            SaleLine saleLine = new SaleLine
+            if (Lines.Any(line => line.ProductId == product.ProductId))
             {
-                ItemId = item.ItemId,
-                Item = item,
-                PriceAtSale = item.Price
-            };
+                throw new InvalidOperationException(
+                    "Produktet findes allerede i salget.");
+            }
 
-            Lines.Add(saleLine);
+            Lines.Add(new SaleLine
+            {
+                ProductId = product.ProductId,
+                ShelfId = product.ShelfId,
+                Product = product,
+                Quantity = quantity,
+                SalePrice = product.Price
+            });
         }
     }
 }

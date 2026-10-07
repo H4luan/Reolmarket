@@ -30,6 +30,7 @@ CREATE TABLE RentalAgreement
 	Price DECIMAL(10,2) NOT NULL,
 	ShelfRenterID INT NOT NULL,
 	ShelfID INT NOT NULL,
+	PaymentMethod NVARCHAR(20) NOT NULL CONSTRAINT DF_RentalAgreement_PaymentMethod DEFAULT ('Cash'),
 
 	CONSTRAINT FK_RentalAgreement_ShelfRenter
 		FOREIGN KEY (ShelfRenterID)
@@ -68,6 +69,7 @@ CREATE TABLE Sale
 	SaleDate DATE NOT NULL,
 	TotalAmount DECIMAL(10,2) NOT NULL,
 	EmployeeID INT NOT NULL,
+	PaymentMethod NVARCHAR(20) NOT NULL CONSTRAINT DF_Sale_PaymentMethod DEFAULT ('Cash'),
 
 	CONSTRAINT FK_Sale_Employee
 		FOREIGN KEY (EmployeeID)
@@ -81,11 +83,14 @@ CREATE TABLE SaleLine
 	SalePrice DECIMAL(10,2) NOT NULL,
 	ProductID INT NOT NULL,
 	SaleID INT NOT NULL,
+	ShelfID INT NOT NULL,
+	Comment NVARCHAR(100) NULL,
 
 	CONSTRAINT FK_SaleLine_Product
 		FOREIGN KEY (ProductID)
 		REFERENCES Product(ProductID),
 
+	CONSTRAINT FK_SaleLine_Shelf FOREIGN KEY (ShelfID) REFERENCES Shelf(ShelfID),
 	CONSTRAINT FK_SaleLine_Sale
 		FOREIGN KEY (SaleID)
 		REFERENCES Sale(SaleID)
@@ -110,6 +115,8 @@ CREATE TABLE Settlement
 	SettlementID INT PRIMARY KEY IDENTITY (1,1),
 	SettlementDate DATE NOT NULL,
 	TotalSales DECIMAL(10,2) NOT NULL,
+	
+	TotalReturns DECIMAL(10,2) NOT NULL,
 	Commission DECIMAL(10,2) NOT NULL,
 	TotalRent DECIMAL(10,2) NOT NULL,
 	Result DECIMAL(10,2) NOT NULL,

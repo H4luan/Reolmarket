@@ -1,0 +1,138 @@
+<Window x:Class="Reolmarket.Views.SalesWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Registrér salg"
+        Height="600"
+        Width="850"
+        WindowStartupLocation="CenterOwner">
+
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0"
+                    Orientation="Horizontal"
+                    Margin="0,0,0,12">
+            <TextBlock Text="Medarbejder:"
+                       VerticalAlignment="Center"
+                       Margin="0,0,8,0"/>
+
+            <ComboBox Width="220"
+                      ItemsSource="{Binding Employees}"
+                      DisplayMemberPath="Name"
+                      SelectedItem="{Binding SelectedEmployee}"/>
+            <Button Content="Tilføj medarbejder"
+                    Command="{Binding AddEmployeeCommand}"
+                    Padding="10,5"
+                    Margin="8,0,0,0"/>
+
+            <Button Content="Genindlæs"
+                    Command="{Binding ReloadCommand}"
+                    Padding="10,5"
+                    Margin="12,0,0,0"/>
+        </StackPanel>
+
+        <StackPanel Grid.Row="1"
+                    Orientation="Horizontal"
+                    Margin="0,0,0,12">
+            <TextBlock Text="Produkt:"
+                       VerticalAlignment="Center"
+                       Margin="0,0,8,0"/>
+
+            <ComboBox Width="220"
+                      ItemsSource="{Binding Products}"
+                      DisplayMemberPath="Name"
+                      SelectedItem="{Binding SelectedProduct}"/>
+
+            <TextBlock Text="Antal:"
+                       VerticalAlignment="Center"
+                       Margin="12,0,8,0"/>
+
+            <TextBox Width="70"
+                     Text="{Binding QuantityToAdd,
+                                    UpdateSourceTrigger=PropertyChanged}"/>
+
+            <Button Content="Tilføj til salg"
+                    Command="{Binding AddToSaleCommand}"
+                    Padding="10,5"
+                    Margin="12,0,0,0"/>
+        </StackPanel>
+
+        <DataGrid Grid.Row="2"
+                  ItemsSource="{Binding CartLines}"
+                  SelectedItem="{Binding SelectedSaleLine, Mode=TwoWay}"
+                  AutoGenerateColumns="False"
+                  CanUserAddRows="False">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Produkt"
+                                    Binding="{Binding Product.Name}"
+                                    IsReadOnly="True"
+                                    Width="*"/>
+
+                <DataGridTextColumn Header="Antal"
+                                    Binding="{Binding Quantity}"
+                                    IsReadOnly="True"
+                                    Width="100"/>
+
+                <DataGridTextColumn Header="Note" Binding="{Binding Comment, UpdateSourceTrigger=LostFocus}" Width="160"/>
+                <DataGridTextColumn Header="Pris pr. stk."
+                                    Binding="{Binding SalePrice, StringFormat={}{0:N2}}"
+                                    IsReadOnly="True"
+                                    Width="140"/>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <StackPanel Grid.Row="3"
+                    HorizontalAlignment="Right"
+                    Margin="0,12,0,12">
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Right"
+                        Margin="0,0,0,8">
+                <TextBlock Text="Total:"
+                           FontWeight="Bold"
+                           Margin="0,0,8,0"/>
+                <TextBlock Text="{Binding CartTotal, StringFormat={}{0:N2} kr.}"
+                           FontWeight="Bold"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Right"
+                        Margin="0,0,0,8">
+                <TextBlock Text="Kontant modtaget:"
+                           VerticalAlignment="Center"
+                           Margin="0,0,8,0"/>
+                <TextBox Width="110"
+                         Text="{Binding CashReceived}"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Right">
+                <TextBlock Text="Byttepenge:"
+                           FontWeight="Bold"
+                           Margin="0,0,8,0"/>
+                <TextBlock Text="{Binding ChangeDue, StringFormat={}{0:N2} kr.}"
+                           FontWeight="Bold"/>
+            </StackPanel>
+        </StackPanel>
+
+        <StackPanel Grid.Row="4">
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Right"
+                        Margin="0,0,0,8">
+                <Button Content="Fjern valgt produkt"
+                        Command="{Binding RemoveFromSaleCommand}"
+                        Padding="10,6"
+                        Margin="0,0,8,0"/>
+
+                <Button Content="Gennemfør salg"
+                        Command="{Binding CompleteSaleCommand}"
+                        Padding="10,6"/>
+            </StackPanel>
+
+            <TextBlock Text="{Binding StatusMessage}"/>
+        </StackPanel>
+    </Grid>
+</Window>

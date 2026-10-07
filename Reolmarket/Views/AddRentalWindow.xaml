@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
         Title="Add New Rental"
-        Height="539"
+        Height="680"
         Width="400"
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize">
@@ -41,6 +41,21 @@
                           SelectedValue="{Binding ShelfId, UpdateSourceTrigger=PropertyChanged}"
                           Height="35"/>
             </StackPanel>
+            <StackPanel Margin="0,0,0,15">
+                <TextBlock Text="Ledige naboreoler (valgfrit):"
+               Margin="0,0,0,5"
+               FontWeight="Bold"/>
+
+                <ComboBox ItemsSource="{Binding NeighborShelves}"
+              DisplayMemberPath="ShelfNumber"
+              SelectedItem="{Binding SelectedNeighborShelf}"
+              Height="35"/>
+
+                <TextBlock Text="{Binding NeighborMessage}"
+               TextWrapping="Wrap"
+               Margin="0,5,0,0"/>
+            </StackPanel>
+
 
             <StackPanel Margin="0,0,0,15">
                 <TextBlock Text="Start Date:"
@@ -64,6 +79,11 @@
                          Height="35"
                          BorderThickness="1"
                          BorderBrush="#DDD"/>
+            </StackPanel>
+
+            <StackPanel Margin="0,0,0,15">
+                <TextBlock Text="Betalingsform:" Margin="0,0,0,5" FontWeight="Bold"/>
+                <ComboBox ItemsSource="{Binding PaymentMethods}" SelectedItem="{Binding SelectedPaymentMethod}" Height="35"/>
             </StackPanel>
 
             <StackPanel Margin="0,0,0,20">
