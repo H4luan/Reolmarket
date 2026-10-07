@@ -10,4 +10,14 @@ public partial class MainWindow : Window
         InitializeComponent();
         DataContext = new MainViewModel();
     }
+
+    private void OpenShelves_Click(object sender, RoutedEventArgs e)
+    {
+        var shelvesWindow = new ShelvesWindow
+        {
+            Owner = this
+        };
+
+        shelvesWindow.ShowDialog();
+    }
 }

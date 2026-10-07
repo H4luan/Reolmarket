@@ -10,16 +10,25 @@ namespace Reolmarket.ViewModels;
 public class MainViewModel : ViewModelBase
 {
     private string _statusMessage = "Ready";
+    private Tenant? _selectedTenant;
     private ObservableCollection<Tenant> _tenants;
     private ObservableCollection<Rental> _rentals;
-
+    private readonly TenantRepository _tenantRepository = new();
+    private readonly RentalRepository _rentalRepository = new();
+    private readonly ShelfRepository _shelfRepository = new();
     public ICommand AddTenantCommand { get; }
+    public ICommand DeleteTenantCommand { get; }
     public ICommand AddRentalCommand { get; }
 
     public string StatusMessage
     {
         get => _statusMessage;
         set => SetProperty(ref _statusMessage, value);
+    }
+    public Tenant? SelectedTenant
+    {
+        get => _selectedTenant;
+        set => SetProperty(ref _selectedTenant, value);
     }
 
     public ObservableCollection<Tenant> Tenants
@@ -40,45 +49,46 @@ public class MainViewModel : ViewModelBase
         _rentals = new ObservableCollection<Rental>();
 
         AddTenantCommand = new RelayCommand(ExecuteAddTenant);
+        DeleteTenantCommand = new RelayCommand(ExecuteDeleteTenant);
         AddRentalCommand = new RelayCommand(ExecuteAddRental);
 
-        LoadSampleData();
+        LoadTenants();
+        LoadRentals();
     }
 
-    private void LoadSampleData()
+    private void LoadTenants()
     {
-        var tenant1 = new Tenant
-        { 
-            TenantId = 1, 
-            Name = "John Doe", 
-            Email = "john@example.com", 
-            Phone = "123-456-7890" 
-        };
-
-        var tenant2 = new Tenant 
-        { 
-            TenantId = 2, 
-            Name = "Jane Smith", 
-            Email = "jane@example.com", 
-            Phone = "098-765-4321" 
-        };
-
-        Tenants.Add(tenant1);
-        Tenants.Add(tenant2);
-
-        var rental1 = new Rental
+        try
         {
-            RentalId = 1,
-            TenantId = 1,
-            Tenant = tenant1,
-            ShelfId = 1,
-            StartDate = DateTime.Now,
-            MonthlyRent = 499.99m
-        };
+            Tenants.Clear();
 
-        Rentals.Add(rental1);
+            foreach (Tenant tenant in _tenantRepository.GetAll())
+            {
+                Tenants.Add(tenant);
+            }
 
-        StatusMessage = "Sample data loaded successfully";
+            StatusMessage = $"{Tenants.Count} lejere indlæst fra databasen.";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Kunne ikke hente lejere: {ex.Message}";
+        }
+    }
+    private void LoadRentals()
+    {
+        try
+        {
+            Rentals.Clear();
+
+            foreach (Rental rental in _rentalRepository.GetAll())
+            {
+                Rentals.Add(rental);
+            }
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Kunne ikke hente lejeaftaler: {ex.Message}";
+        }
     }
 
     private void ExecuteAddTenant(object? parameter)
@@ -91,42 +101,129 @@ public class MainViewModel : ViewModelBase
             {
                 var newTenant = new Tenant
                 {
-                    TenantId = Tenants.Count + 1,
                     Name = viewModel.Name,
                     Email = viewModel.Email,
                     Phone = viewModel.Phone
                 };
 
-                Tenants.Add(newTenant);
-                StatusMessage = $"Tenant '{newTenant.Name}' added successfully";
+                try
+                {
+                    _tenantRepository.Add(newTenant);
+                    Tenants.Add(newTenant);
+                    StatusMessage = $"Lejeren '{newTenant.Name}' blev gemt.";
+                }
+                catch (Exception ex)
+                {
+                    StatusMessage = $"Kunne ikke gemme lejeren: {ex.Message}";
+                }
             }
+        }
+    }
+    private void ExecuteDeleteTenant(object? parameter)
+    {
+        Tenant? tenantToDelete = SelectedTenant;
+
+        if (tenantToDelete == null)
+        {
+            StatusMessage = "Vælg en lejer, der skal slettes.";
+            return;
+        }
+
+        try
+        {
+            _tenantRepository.Delete(tenantToDelete.TenantId);
+            Tenants.Remove(tenantToDelete);
+            SelectedTenant = null;
+            StatusMessage = $"Lejeren '{tenantToDelete.Name}' blev slettet.";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Kunne ikke slette lejeren: {ex.Message}";
         }
     }
 
     private void ExecuteAddRental(object? parameter)
     {
-        var window = new AddRentalWindow();
-        if (window.ShowDialog() == true)
+        List<Shelf> shelves;
+
+        try
         {
-            var viewModel = window.DataContext as AddRentalViewModel;
-            if (viewModel != null && viewModel.TenantId > 0 && viewModel.ShelfId > 0)
+            shelves = _shelfRepository.GetAll();
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Kunne ikke hente reoler: {ex.Message}";
+            return;
+        }
+
+        var window = new AddRentalWindow(Tenants, shelves);
+
+        if (window.ShowDialog() != true)
+        {
+            return;
+        }
+
+        var viewModel = window.DataContext as AddRentalViewModel;
+
+        if (viewModel == null ||
+            viewModel.TenantId <= 0 ||
+            viewModel.ShelfId <= 0)
+        {
+            StatusMessage = "Vælg en gyldig lejer og reol.";
+            return;
+        }
+
+        if (viewModel.EndDate.HasValue &&
+            viewModel.EndDate.Value.Date < viewModel.StartDate.Date)
+        {
+            StatusMessage = "Slutdatoen må ikke være før startdatoen.";
+            return;
+        }
+
+        try
+        {
+            bool shelfIsAvailable = _rentalRepository.IsShelfAvailable(
+                viewModel.ShelfId,
+                viewModel.StartDate,
+                viewModel.EndDate);
+
+            if (!shelfIsAvailable)
             {
-                var tenant = Tenants.FirstOrDefault(t => t.TenantId == viewModel.TenantId);
+                MessageBox.Show(
+                    "Reolen er allerede lejet i den valgte periode.",
+                    "Reolen er ikke ledig",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
 
-                var newRental = new Rental
-                {
-                    RentalId = Rentals.Count + 1,
-                    TenantId = viewModel.TenantId,
-                    Tenant = tenant,
-                    ShelfId = viewModel.ShelfId,
-                    StartDate = viewModel.StartDate,
-                    EndDate = viewModel.EndDate,
-                    MonthlyRent = viewModel.MonthlyRent
-                };
-
-                Rentals.Add(newRental);
-                StatusMessage = $"Rental added successfully for tenant ID {newRental.TenantId}";
+                StatusMessage =
+                    "Reolen er allerede lejet i den valgte periode.";
+                return;
             }
+
+            var tenant = Tenants.FirstOrDefault(
+                t => t.TenantId == viewModel.TenantId);
+
+            var newRental = new Rental
+            {
+                TenantId = viewModel.TenantId,
+                Tenant = tenant,
+                ShelfId = viewModel.ShelfId,
+                StartDate = viewModel.StartDate,
+                EndDate = viewModel.EndDate,
+                MonthlyRent = viewModel.MonthlyRent
+            };
+
+            _rentalRepository.Add(newRental);
+            Rentals.Add(newRental);
+
+            StatusMessage =
+                $"Lejeaftalen blev gemt med ID {newRental.RentalId}.";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage =
+                $"Kunne ikke gemme lejeaftalen: {ex.Message}";
         }
     }
 }
+

@@ -5,12 +5,33 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Reolmarket.Views"
         mc:Ignorable="d"
-        Title="Reolmarket - Rental &amp; Sales Management" Height="600" Width="900"
+        Title="Reolmarket - Rental &amp; Sales Management"
+        Height="600"
+        Width="900"
         WindowStartupLocation="CenterScreen">
+
     <Grid Background="#F5F5F5">
-        <StackPanel Margin="20" VerticalAlignment="Center" HorizontalAlignment="Center">
-            <TextBlock Text="Welcome to Reolmarket" FontSize="32" FontWeight="Bold" Foreground="#333" Margin="0,0,0,20" TextAlignment="Center"/>
-            <TextBlock Text="Rental &amp; Sales Management System" FontSize="18" Foreground="#666" TextAlignment="Center" Margin="0,0,0,40"/>
+        <StackPanel Margin="20"
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Center">
+
+            <TextBlock Text="Welcome to Reolmarket"
+                       FontSize="32"
+                       FontWeight="Bold"
+                       Foreground="#333"
+                       Margin="0,0,0,20"
+                       TextAlignment="Center"/>
+
+            <TextBlock Text="Rental &amp; Sales Management System"
+                       FontSize="18"
+                       Foreground="#666"
+                       TextAlignment="Center"
+                       Margin="0,0,0,40"/>
+
+            <Button Content="Administrér reoler"
+                    Click="OpenShelves_Click"
+                    Margin="0,10,0,0"
+                    Padding="10"/>
 
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -21,37 +42,76 @@
 
                 <!-- Tenants Section -->
                 <StackPanel Grid.Column="0">
-                    <TextBlock Text="Tenants" FontSize="16" FontWeight="Bold" Foreground="#333" Margin="0,0,0,10"/>
-                    <ListBox ItemsSource="{Binding Tenants}" Height="200" BorderThickness="1" BorderBrush="#DDD">
+                    <TextBlock Text="Tenants"
+                               FontSize="16"
+                               FontWeight="Bold"
+                               Foreground="#333"
+                               Margin="0,0,0,10"/>
+
+                    <ListBox ItemsSource="{Binding Tenants}"
+                             SelectedItem="{Binding SelectedTenant}"
+                             Height="200"
+                             BorderThickness="1"
+                             BorderBrush="#DDD">
                         <ListBox.ItemTemplate>
                             <DataTemplate>
                                 <TextBlock Text="{Binding Name}"/>
                             </DataTemplate>
                         </ListBox.ItemTemplate>
                     </ListBox>
-                    <Button Content="Add Tenant" Command="{Binding AddTenantCommand}" Margin="0,10,0,0" Padding="10" Background="#4CAF50" Foreground="White"/>
+
+                    <Button Content="Delete Tenant"
+                            Command="{Binding DeleteTenantCommand}"
+                            Margin="0,10,0,0"
+                            Padding="10"
+                            Background="#D9534F"
+                            Foreground="White"/>
+
+                    <Button Content="Add Tenant"
+                            Command="{Binding AddTenantCommand}"
+                            Margin="0,10,0,0"
+                            Padding="10"
+                            Background="#4CAF50"
+                            Foreground="White"/>
                 </StackPanel>
 
                 <!-- Rentals Section -->
                 <StackPanel Grid.Column="2">
-                    <TextBlock Text="Rentals" FontSize="16" FontWeight="Bold" Foreground="#333" Margin="0,0,0,10"/>
-                    <ListBox ItemsSource="{Binding Rentals}" Height="200" BorderThickness="1" BorderBrush="#DDD">
+                    <TextBlock Text="Rentals"
+                               FontSize="16"
+                               FontWeight="Bold"
+                               Foreground="#333"
+                               Margin="0,0,0,10"/>
+
+                    <ListBox ItemsSource="{Binding Rentals}"
+                             Height="200"
+                             BorderThickness="1"
+                             BorderBrush="#DDD">
                         <ListBox.ItemTemplate>
                             <DataTemplate>
                                 <StackPanel>
-                                    <TextBlock Text="{Binding Tenant.Name, StringFormat='Tenant: {0}'}" FontWeight="Bold"/>
-                                    <TextBlock Text="{Binding StartDate, StringFormat='Start: {0:yyyy-MM-dd}'}" FontSize="12"/>
+                                    <TextBlock Text="{Binding Tenant.Name, StringFormat='Tenant: {0}'}"
+                                               FontWeight="Bold"/>
+                                    <TextBlock Text="{Binding StartDate, StringFormat='Start: {0:yyyy-MM-dd}'}"
+                                               FontSize="12"/>
                                 </StackPanel>
                             </DataTemplate>
                         </ListBox.ItemTemplate>
                     </ListBox>
-                    <Button Content="Add Rental" Command="{Binding AddRentalCommand}" Margin="0,10,0,0" Padding="10" Background="#2196F3" Foreground="White"/>
+
+                    <Button Content="Add Rental"
+                            Command="{Binding AddRentalCommand}"
+                            Margin="0,10,0,0"
+                            Padding="10"
+                            Background="#2196F3"
+                            Foreground="White"/>
                 </StackPanel>
             </Grid>
 
             <StatusBar Margin="0,40,0,0">
                 <StatusBarItem>
-                    <TextBlock Text="{Binding StatusMessage}" Foreground="#666"/>
+                    <TextBlock Text="{Binding StatusMessage}"
+                               Foreground="#666"/>
                 </StatusBarItem>
             </StatusBar>
         </StackPanel>

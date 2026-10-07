@@ -4,42 +4,100 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="Add New Rental" Height="539" Width="400"
+        Title="Add New Rental"
+        Height="539"
+        Width="400"
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize">
+
     <Grid Margin="20">
         <StackPanel VerticalAlignment="Top">
-            <TextBlock Text="Add New Rental" FontSize="16" FontWeight="Bold" Margin="0,0,0,20"/>
+
+            <TextBlock Text="Add New Rental"
+                       FontSize="16"
+                       FontWeight="Bold"
+                       Margin="0,0,0,20"/>
 
             <StackPanel Margin="0,0,0,15">
-                <TextBlock Text="Tenant ID:" Margin="0,0,0,5" FontWeight="Bold"/>
-                <TextBox Text="{Binding TenantId, UpdateSourceTrigger=PropertyChanged}" Padding="8" Height="35" BorderThickness="1" BorderBrush="#DDD"/>
+                <TextBlock Text="Tenant:"
+                           Margin="0,0,0,5"
+                           FontWeight="Bold"/>
+
+                <ComboBox ItemsSource="{Binding Tenants}"
+                          DisplayMemberPath="Name"
+                          SelectedValuePath="TenantId"
+                          SelectedValue="{Binding TenantId, UpdateSourceTrigger=PropertyChanged}"
+                          Height="35"/>
             </StackPanel>
 
             <StackPanel Margin="0,0,0,15">
-                <TextBlock Text="Shelf ID:" Margin="0,0,0,5" FontWeight="Bold"/>
-                <TextBox Text="{Binding ShelfId, UpdateSourceTrigger=PropertyChanged}" Padding="8" Height="35" BorderThickness="1" BorderBrush="#DDD"/>
+                <TextBlock Text="Shelf:"
+                           Margin="0,0,0,5"
+                           FontWeight="Bold"/>
+
+                <ComboBox ItemsSource="{Binding Shelves}"
+                          DisplayMemberPath="ShelfNumber"
+                          SelectedValuePath="ShelfId"
+                          SelectedValue="{Binding ShelfId, UpdateSourceTrigger=PropertyChanged}"
+                          Height="35"/>
             </StackPanel>
 
             <StackPanel Margin="0,0,0,15">
-                <TextBlock Text="Start Date:" Margin="0,0,0,5" FontWeight="Bold"/>
-                <TextBox Text="{Binding StartDate, StringFormat='yyyy-MM-dd', UpdateSourceTrigger=PropertyChanged}" Padding="8" Height="35" BorderThickness="1" BorderBrush="#DDD"/>
+                <TextBlock Text="Start Date:"
+                           Margin="0,0,0,5"
+                           FontWeight="Bold"/>
+
+                <TextBox Text="{Binding StartDate, StringFormat='yyyy-MM-dd', UpdateSourceTrigger=PropertyChanged}"
+                         Padding="8"
+                         Height="35"
+                         BorderThickness="1"
+                         BorderBrush="#DDD"/>
             </StackPanel>
 
             <StackPanel Margin="0,0,0,15">
-                <TextBlock Text="End Date (Optional):" Margin="0,0,0,5" FontWeight="Bold"/>
-                <TextBox Text="{Binding EndDate, StringFormat='yyyy-MM-dd', UpdateSourceTrigger=PropertyChanged}" Padding="8" Height="35" BorderThickness="1" BorderBrush="#DDD"/>
+                <TextBlock Text="End Date (Optional):"
+                           Margin="0,0,0,5"
+                           FontWeight="Bold"/>
+
+                <TextBox Text="{Binding EndDate, StringFormat='yyyy-MM-dd', UpdateSourceTrigger=PropertyChanged}"
+                         Padding="8"
+                         Height="35"
+                         BorderThickness="1"
+                         BorderBrush="#DDD"/>
             </StackPanel>
 
             <StackPanel Margin="0,0,0,20">
-                <TextBlock Text="Monthly Rent:" Margin="0,0,0,5" FontWeight="Bold"/>
-                <TextBox Text="{Binding MonthlyRent, UpdateSourceTrigger=PropertyChanged}" Padding="8" Height="35" BorderThickness="1" BorderBrush="#DDD"/>
+                <TextBlock Text="Monthly Rent:"
+                           Margin="0,0,0,5"
+                           FontWeight="Bold"/>
+
+                <TextBox Text="{Binding MonthlyRent, UpdateSourceTrigger=PropertyChanged}"
+                         Padding="8"
+                         Height="35"
+                         BorderThickness="1"
+                         BorderBrush="#DDD"/>
             </StackPanel>
 
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Height="40">
-                <Button Content="OK" Command="{Binding OkCommand}" Width="80" Margin="0,0,10,0" Background="#2196F3" Foreground="White" Padding="5"/>
-                <Button Content="Cancel" Command="{Binding CancelCommand}" Width="80" Background="#f44336" Foreground="White" Padding="5"/>
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Right"
+                        Height="40">
+
+                <Button Content="OK"
+                        Command="{Binding OkCommand}"
+                        Width="80"
+                        Margin="0,0,10,0"
+                        Background="#2196F3"
+                        Foreground="White"
+                        Padding="5"/>
+
+                <Button Content="Cancel"
+                        Command="{Binding CancelCommand}"
+                        Width="80"
+                        Background="#f44336"
+                        Foreground="White"
+                        Padding="5"/>
             </StackPanel>
+
         </StackPanel>
     </Grid>
 </Window>

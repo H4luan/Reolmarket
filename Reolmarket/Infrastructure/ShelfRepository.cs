@@ -96,10 +96,10 @@ namespace Reolmarket.Infrastructure
                 """
                 UPDATE Shelf
                 SET Number = @Number,
-                Location = @Location
-                NumberOfShelves  = @NumberOfShelves
+                Location = @Location,
+                NumberOfShelves  = @NumberOfShelves,
                 NumberOfClothingRails = @NumberOfClothingRails
-                WHERE ShelfID = @ShelfID
+                WHERE ShelfID = @ShelfID;
                 """;
 
             command.Parameters.AddWithValue("@ShelfID", shelf.ShelfId);
@@ -176,7 +176,7 @@ namespace Reolmarket.Infrastructure
                 return ShelfLayout.ThreeShelvesAndRail;
             }
 
-            throw new InvalidOperationException($"Ukendt reolindretning: {shelves} hylder og {rails} bøjleหtænger");
+            throw new InvalidOperationException($"Ukendt reolindretning: {shelves} hylder og {rails} bøjlestænger");
         }
 
 

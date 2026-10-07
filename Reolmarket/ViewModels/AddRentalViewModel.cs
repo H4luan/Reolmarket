@@ -1,4 +1,7 @@
+using System.Collections.ObjectModel;
+using System.Collections.Generic;
 using System.Windows.Input;
+using Reolmarket.Domain;
 using Reolmarket.Infrastructure;
 
 namespace Reolmarket.ViewModels;
@@ -11,6 +14,9 @@ public class AddRentalViewModel : ViewModelBase
     private DateTime? _endDate;
     private decimal _monthlyRent;
     private bool _dialogResult;
+
+    public ObservableCollection<Tenant> Tenants { get; }
+    public ObservableCollection<Shelf> Shelves { get; }
 
     public int TenantId
     {
@@ -53,15 +59,22 @@ public class AddRentalViewModel : ViewModelBase
 
     public event Action? RequestClose;
 
-    public AddRentalViewModel()
+    public AddRentalViewModel(
+        IEnumerable<Tenant> tenants,
+        IEnumerable<Shelf> shelves)
     {
+        Tenants = new ObservableCollection<Tenant>(tenants);
+        Shelves = new ObservableCollection<Shelf>(shelves);
+
         OkCommand = new RelayCommand(ExecuteOk, CanExecuteOk);
         CancelCommand = new RelayCommand(ExecuteCancel);
     }
 
     private bool CanExecuteOk(object? parameter)
     {
-        return TenantId > 0 && ShelfId > 0 && MonthlyRent > 0;
+        return TenantId > 0 &&
+               ShelfId > 0 &&
+               MonthlyRent > 0;
     }
 
     private void ExecuteOk(object? parameter)
