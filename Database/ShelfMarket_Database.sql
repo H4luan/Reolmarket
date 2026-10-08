@@ -1,128 +1,61 @@
-CREATE DATABASE ShelfMarket;
-GO
-
 USE ShelfMarket;
 GO
 
-CREATE TABLE ShelfRenter
-(
-	ShelfRenterID INT PRIMARY KEY IDENTITY(1,1),
-	Name NVARCHAR(100) NOT NULL,
-	Phone NVARCHAR(20),
-	Email NVARCHAR(100)
-);
+IF COL_LENGTH('dbo.RentalAgreement', 'PaymentMethod') IS NULL
+BEGIN
+    ALTER TABLE dbo.RentalAgreement
+    ADD PaymentMethod NVARCHAR(20) NOT NULL
+        CONSTRAINT DF_RentalAgreement_PaymentMethod DEFAULT ('Cash');
+END;
+GO
 
-CREATE TABLE Shelf
-(
-	ShelfID INT PRIMARY KEY IDENTITY(1,1),
-	Number INT,
-	ShelfStatus NVARCHAR(20),
-	Location NVARCHAR(100),
-	NumberOfShelves INT,
-	NumberOfClothingRails INT
-);
+IF COL_LENGTH('dbo.Sale', 'PaymentMethod') IS NULL
+BEGIN
+    ALTER TABLE dbo.Sale
+    ADD PaymentMethod NVARCHAR(20) NOT NULL
+        CONSTRAINT DF_Sale_PaymentMethod DEFAULT ('Cash');
+END;
+GO
 
-CREATE TABLE RentalAgreement
-(
-	RentalAgreementID INT PRIMARY KEY IDENTITY(1,1),
-	StartDate DATE NOT NULL,
-	EndDate DATE NULL,
-	Price DECIMAL(10,2) NOT NULL,
-	ShelfRenterID INT NOT NULL,
-	ShelfID INT NOT NULL,
-	PaymentMethod NVARCHAR(20) NOT NULL CONSTRAINT DF_RentalAgreement_PaymentMethod DEFAULT ('Cash'),
+IF COL_LENGTH('dbo.SaleLine', 'ShelfID') IS NULL
+BEGIN
+    ALTER TABLE dbo.SaleLine ADD ShelfID INT NULL;
+END;
+GO
 
-	CONSTRAINT FK_RentalAgreement_ShelfRenter
-		FOREIGN KEY (ShelfRenterID)
-		REFERENCES ShelfRenter(ShelfRenterID),
+-- Dynamic SQL runs after the new column exists as a separate batch.
+EXEC sys.sp_executesql N'
+    UPDATE sl
+    SET ShelfID = p.ShelfID
+    FROM dbo.SaleLine AS sl
+    INNER JOIN dbo.Product AS p ON p.ProductID = sl.ProductID
+    WHERE sl.ShelfID IS NULL;';
+GO
 
-	CONSTRAINT FK_RentalAgreement_Shelf
-		FOREIGN KEY (ShelfID)
-		REFERENCES Shelf(ShelfID)
-);
+IF EXISTS (SELECT 1 FROM dbo.SaleLine WHERE ShelfID IS NULL)
+BEGIN
+    THROW 50010, 'Could not assign a shelf to every existing sale line.', 1;
+END;
+GO
 
-CREATE TABLE Product
-(
-	ProductID INT PRIMARY KEY IDENTITY (1,1),
-	Name NVARCHAR(100) NOT NULL,
-	Price DECIMAL(10,2) NOT NULL,
-	Barcode NVARCHAR(100) NOT NULL,
-	StockQuantity INT NOT NULL,
-	ShelfID INT NOT NULL,
+IF COLUMNPROPERTY(OBJECT_ID('dbo.SaleLine'), 'ShelfID', 'AllowsNull') = 1
+BEGIN
+    ALTER TABLE dbo.SaleLine ALTER COLUMN ShelfID INT NOT NULL;
+END;
+GO
 
-	CONSTRAINT FK_Product_Shelf
-		FOREIGN KEY (ShelfID)
-		REFERENCES Shelf(ShelfID)
-);
+IF NOT EXISTS (
+    SELECT 1 FROM sys.foreign_keys WHERE name = 'FK_SaleLine_Shelf'
+)
+BEGIN
+    ALTER TABLE dbo.SaleLine
+    ADD CONSTRAINT FK_SaleLine_Shelf
+        FOREIGN KEY (ShelfID) REFERENCES dbo.Shelf(ShelfID);
+END;
+GO
 
-CREATE TABLE Employee
-(
-	EmployeeID INT PRIMARY KEY IDENTITY (1,1),
-	Name NVARCHAR(100) NOT NULL,
-	Phone NVARCHAR(100) NOT NULL,
-	Email NVARCHAR(100) NOT NULL
-);
-
-CREATE TABLE Sale
-(
-	SaleID INT PRIMARY KEY IDENTITY (1,1),
-	SaleDate DATE NOT NULL,
-	TotalAmount DECIMAL(10,2) NOT NULL,
-	EmployeeID INT NOT NULL,
-	PaymentMethod NVARCHAR(20) NOT NULL CONSTRAINT DF_Sale_PaymentMethod DEFAULT ('Cash'),
-
-	CONSTRAINT FK_Sale_Employee
-		FOREIGN KEY (EmployeeID)
-		REFERENCES Employee(EmployeeID)
-);
-
-CREATE TABLE SaleLine
-(
-	SaleLineID INT PRIMARY KEY IDENTITY (1,1),
-	Quantity INT NOT NULL,
-	SalePrice DECIMAL(10,2) NOT NULL,
-	ProductID INT NOT NULL,
-	SaleID INT NOT NULL,
-	ShelfID INT NOT NULL,
-	Comment NVARCHAR(100) NULL,
-
-	CONSTRAINT FK_SaleLine_Product
-		FOREIGN KEY (ProductID)
-		REFERENCES Product(ProductID),
-
-	CONSTRAINT FK_SaleLine_Shelf FOREIGN KEY (ShelfID) REFERENCES Shelf(ShelfID),
-	CONSTRAINT FK_SaleLine_Sale
-		FOREIGN KEY (SaleID)
-		REFERENCES Sale(SaleID)
-);
-
-CREATE TABLE ProductReturn
-(
-	ProductReturnID INT PRIMARY KEY IDENTITY (1,1),
-	ReturnDate DATE NOT NULL,
-	Quantity INT NOT NULL,
-	Amount DECIMAL(10,2) NOT NULL,
-	Comment NVARCHAR(100),
-	SaleLineID INT NOT NULL,
-
-	CONSTRAINT FK_ProductReturn_SaleLine
-		FOREIGN KEY (SaleLineID)
-		REFERENCES SaleLine(SaleLineID)
-);
-
-CREATE TABLE Settlement
-(
-	SettlementID INT PRIMARY KEY IDENTITY (1,1),
-	SettlementDate DATE NOT NULL,
-	TotalSales DECIMAL(10,2) NOT NULL,
-	
-	TotalReturns DECIMAL(10,2) NOT NULL,
-	Commission DECIMAL(10,2) NOT NULL,
-	TotalRent DECIMAL(10,2) NOT NULL,
-	Result DECIMAL(10,2) NOT NULL,
-	ShelfRenterID INT NOT NULL,
-
-	CONSTRAINT FK_Settlement_ShelfRenter
-		FOREIGN KEY (ShelfRenterID)
-		REFERENCES ShelfRenter(ShelfRenterID)
-);
+IF COL_LENGTH('dbo.SaleLine', 'Comment') IS NULL
+BEGIN
+    ALTER TABLE dbo.SaleLine ADD Comment NVARCHAR(100) NULL;
+END;
+GO

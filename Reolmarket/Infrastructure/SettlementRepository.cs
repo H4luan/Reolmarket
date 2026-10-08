@@ -44,7 +44,7 @@ public class SettlementRepository
                       AND pr.ReturnDate < @NextMonthStart
                 ), 0) AS TotalReturns,
                 COALESCE((
-                    SELECT COUNT(*) * CASE WHEN COUNT(*) = 1 THEN 850.00 WHEN COUNT(*) <= 3 THEN 825.00 ELSE 800.00 END
+                    SELECT SUM(ra.Price)
                     FROM RentalAgreement AS ra
                     WHERE ra.ShelfRenterID = @TenantID
                       AND ra.StartDate < @FollowingMonthStart
@@ -76,6 +76,82 @@ public class SettlementRepository
         return settlement;
     }
 
+    public List<Settlement> GetForTenant(int tenantId)
+    {
+        var settlements = new List<Settlement>();
+
+        using SqlConnection connection = DatabaseConnection.CreateConnection();
+        connection.Open();
+
+        using SqlCommand command = connection.CreateCommand();
+        command.CommandText = """
+            SELECT s.SettlementID, s.SettlementDate, s.TotalSales, s.TotalReturns,
+                   s.Commission, s.TotalRent, s.LastModifiedAt,
+                   s.ModifiedByEmployeeID, COALESCE(e.Name, '')
+            FROM Settlement AS s
+            LEFT JOIN Employee AS e ON e.EmployeeID = s.ModifiedByEmployeeID
+            WHERE s.ShelfRenterID = @TenantID
+            ORDER BY s.SettlementDate DESC, s.SettlementID DESC;
+            """;
+        command.Parameters.AddWithValue("@TenantID", tenantId);
+
+        using SqlDataReader reader = command.ExecuteReader();
+        while (reader.Read())
+        {
+            DateTime periodEnd = reader.GetDateTime(1);
+            settlements.Add(new Settlement
+            {
+                SettlementId = reader.GetInt32(0),
+                TenantId = tenantId,
+                PeriodStart = new DateTime(periodEnd.Year, periodEnd.Month, 1),
+                PeriodEnd = periodEnd,
+                GrossSales = reader.GetDecimal(2),
+                TotalReturns = reader.GetDecimal(3),
+                Commission = reader.GetDecimal(4),
+                RentForNextPeriod = reader.GetDecimal(5),
+                IsFinalized = true,
+                LastModifiedAt = reader.IsDBNull(6) ? null : reader.GetDateTime(6),
+                ModifiedByEmployeeId = reader.IsDBNull(7) ? null : reader.GetInt32(7),
+                ModifiedByEmployeeName = reader.GetString(8)
+            });
+        }
+
+        return settlements;
+    }
+    public void Update(int settlementId, Settlement settlement, int employeeId)
+    {
+        using SqlConnection connection = DatabaseConnection.CreateConnection();
+        connection.Open();
+
+        using SqlCommand command = connection.CreateCommand();
+        command.CommandText = """
+            UPDATE Settlement
+            SET SettlementDate = @SettlementDate,
+                TotalSales = @TotalSales,
+                TotalReturns = @TotalReturns,
+                Commission = @Commission,
+                TotalRent = @TotalRent,
+                Result = @Result,
+                LastModifiedAt = SYSDATETIME(),
+                ModifiedByEmployeeID = @EmployeeID
+            WHERE SettlementID = @SettlementID
+              AND ShelfRenterID = @TenantID;
+            """;
+        command.Parameters.AddWithValue("@SettlementID", settlementId);
+        command.Parameters.AddWithValue("@TenantID", settlement.TenantId);
+        command.Parameters.AddWithValue("@EmployeeID", employeeId);
+        command.Parameters.AddWithValue("@SettlementDate", settlement.PeriodEnd.Date);
+        command.Parameters.AddWithValue("@TotalSales", settlement.GrossSales);
+        command.Parameters.AddWithValue("@TotalReturns", settlement.TotalReturns);
+        command.Parameters.AddWithValue("@Commission", settlement.Commission);
+        command.Parameters.AddWithValue("@TotalRent", settlement.RentForNextPeriod);
+        command.Parameters.AddWithValue("@Result", settlement.NetAmount);
+
+        if (command.ExecuteNonQuery() == 0)
+        {
+            throw new InvalidOperationException("Den gemte afregning blev ikke fundet.");
+        }
+    }
     public int Save(Settlement settlement)
     {
         using SqlConnection connection = DatabaseConnection.CreateConnection();
@@ -110,3 +186,4 @@ public class SettlementRepository
         return Convert.ToInt32(command.ExecuteScalar());
     }
 }
+

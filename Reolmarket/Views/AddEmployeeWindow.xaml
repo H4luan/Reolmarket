@@ -41,7 +41,7 @@
 
             <StackPanel Orientation="Horizontal"
                         HorizontalAlignment="Right">
-                <Button Content="OK"
+                <Button Content="Opret"
                         Command="{Binding OkCommand}"
                         Width="80"
                         Margin="0,0,10,0"

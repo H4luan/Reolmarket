@@ -1,5 +1,7 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.Linq;
+using Microsoft.Data.SqlClient;
+using System.Windows;
 using System.Windows.Input;
 using Reolmarket.Domain;
 using Reolmarket.Infrastructure;
@@ -141,6 +143,24 @@ public class ProductsViewModel : ViewModelBase
             return;
         }
 
+        bool isSavedProduct = SelectedProduct.ProductId > 0;
+        string confirmationMessage = isSavedProduct
+            ? $"Er du sikker på, at du vil slette produktet '{SelectedProduct.Name}' fra databasen? Handlingen kan ikke fortrydes. Produkter, der indgår i et tidligere salg, kan ikke slettes."
+            : $"Er du sikker på, at du vil fjerne det nye produkt '{SelectedProduct.Name}' fra listen? Det er endnu ikke gemt i databasen.";
+
+        MessageBoxResult confirmation = MessageBox.Show(
+            confirmationMessage,
+            "Bekræft sletning af produkt",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Warning,
+            MessageBoxResult.No);
+
+        if (confirmation != MessageBoxResult.Yes)
+        {
+            StatusMessage = "Sletningen blev annulleret.";
+            return;
+        }
+
         try
         {
             if (SelectedProduct.ProductId == 0)
@@ -155,6 +175,10 @@ public class ProductsViewModel : ViewModelBase
             _productRepository.Delete(productId);
             LoadData();
             StatusMessage = "Produktet er slettet.";
+        }
+        catch (SqlException ex) when (ex.Number == 547)
+        {
+            StatusMessage = "Produktet indgår i et tidligere salg og kan derfor ikke slettes. Hvis varen ikke længere sælges, kan du sætte lagerantallet til 0 og gemme produktet.";
         }
         catch (Exception ex)
         {

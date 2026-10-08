@@ -3,145 +3,111 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:Reolmarket.Views"
         mc:Ignorable="d"
-        Title="Reolmarket - Rental &amp; Sales Management"
-        Height="820"
-        Width="900"
+        Title="Reolmarkedet"
+        Height="900"
+        Width="1120"
+        MinHeight="720"
+        MinWidth="900"
         WindowStartupLocation="CenterScreen">
 
-    <Grid Background="#F5F5F5">
+    <Window.Resources>
+        <Style TargetType="Button">
+            <Setter Property="MinHeight" Value="40"/>
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="Margin" Value="5"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Background" Value="#E8EDF3"/>
+            <Setter Property="Foreground" Value="#243447"/>
+            <Setter Property="BorderBrush" Value="#D2D9E2"/>
+        </Style>
+        <Style TargetType="ListBox">
+            <Setter Property="BorderBrush" Value="#D8DEE7"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="Padding" Value="6"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid Background="#F3F5F8">
         <ScrollViewer VerticalScrollBarVisibility="Auto"
                       HorizontalScrollBarVisibility="Disabled">
-            <StackPanel Margin="20"
-                        VerticalAlignment="Top"
+            <StackPanel Margin="24"
+                        MaxWidth="1250"
                         HorizontalAlignment="Center">
 
-            <TextBlock Text="Welcome to Reolmarket"
-                       FontSize="32"
-                       FontWeight="Bold"
-                       Foreground="#333"
-                       Margin="0,0,0,20"
-                       TextAlignment="Center"/>
+                <TextBlock Text="Reolmarkedet"
+                           FontSize="30"
+                           FontWeight="Bold"
+                           Foreground="#25364A"
+                           Margin="0,6,0,4"
+                           TextAlignment="Center"/>
 
-            <TextBlock Text="Rental &amp; Sales Management System"
-                       FontSize="18"
-                       Foreground="#666"
-                       TextAlignment="Center"
-                       Margin="0,0,0,40"/>
+                <Grid Margin="0,0,0,4">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="16"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="14"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
 
-            <Button Content="Administrér reoler"
-                    Click="OpenShelves_Click"
-                    Margin="0,10,0,0"
-                    Padding="10"/>
-            <Button Content="Administrér produkter"
-                    Click="OpenProducts_Click"
-                    Margin="0,10,0,0"
-                    Padding="10"/>
-            <Button Content="Ledige reoler og priser"
-                    Click="OpenAvailableShelves_Click"
-                    Margin="0,10,0,0"
-                    Padding="10"/>
-            <Button Content="Opsig reol"
-                    Click="OpenRentalCancellation_Click"
-                    Margin="0,10,0,0"
-                    Padding="10"/>
-            <Button Content="Månedsafregning"
-                    Click="OpenSettlement_Click"
-                    Margin="0,10,0,0"
-                    Padding="10"/>
-            <Button Content="Registrér retur"
-                    Click="OpenReturns_Click"
-                    Margin="0,10,0,0"
-                    Padding="10"/>
-            <Button Content="Ret salgslinje" Click="OpenSaleCorrections_Click" Margin="0,10,0,0" Padding="10"/>
-            <Button Content="Registrér salg"
-                    Click="OpenSales_Click"
-                    Margin="0,10,0,0"
-                    Padding="10"/>
+                    <Border Grid.Row="0" Grid.Column="0" Background="White" BorderBrush="#D8DEE7" BorderThickness="1" CornerRadius="8" Padding="16">
+                        <StackPanel>
+                            <TextBlock Text="Opsætning" FontSize="20" FontWeight="Bold" Foreground="#25364A"/>
+                            <TextBlock Text="Klargør reoler og varer i systemet." FontSize="13" Foreground="#68778A" Margin="0,4,0,8"/>
+                            <Button Content="Administrér reoler" Click="OpenShelves_Click"/>
+                            <Button Content="Administrér produkter" Click="OpenProducts_Click"/>
+                        </StackPanel>
+                    </Border>
 
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="20"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
+                    <Border Grid.Row="0" Grid.Column="2" Background="White" BorderBrush="#D8DEE7" BorderThickness="1" CornerRadius="8" Padding="16">
+                        <StackPanel>
+                            <TextBlock Text="Lejere og reolleje" FontSize="20" FontWeight="Bold" Foreground="#25364A"/>
+                            <TextBlock Text="Administrér lejere, lejeaftaler og reolernes tilgængelighed." FontSize="13" Foreground="#68778A" Margin="0,4,0,8" TextWrapping="Wrap"/>
+                            <Button Content="Lejere og lejeaftaler" Click="OpenTenantRentalManagement_Click" Background="#2F80C9" Foreground="White" BorderBrush="#2F80C9"/>
+                            <Button Content="Ledige reoler og priser" Click="OpenAvailableShelves_Click"/>
+                            <Button Content="Opsig reol" Click="OpenRentalCancellation_Click"/>
+                        </StackPanel>
+                    </Border>
 
-                <!-- Tenants Section -->
-                <StackPanel Grid.Column="0">
-                    <TextBlock Text="Tenants"
-                               FontSize="16"
-                               FontWeight="Bold"
-                               Foreground="#333"
-                               Margin="0,0,0,10"/>
+                    <Border Grid.Row="2" Grid.Column="0" Background="White" BorderBrush="#D8DEE7" BorderThickness="1" CornerRadius="8" Padding="16">
+                        <StackPanel>
+                            <TextBlock Text="Butik" FontSize="20" FontWeight="Bold" Foreground="#25364A"/>
+                            <TextBlock Text="Registrér salg og håndtér ændringer og returneringer." FontSize="13" Foreground="#68778A" Margin="0,4,0,8" TextWrapping="Wrap"/>
+                            <Button Content="Registrér salg" Click="OpenSales_Click" Background="#2F9E65" Foreground="White" BorderBrush="#2F9E65"/>
+                            <Button Content="Registrér retur" Click="OpenReturns_Click"/>
+                            <Button Content="Ret vare på et salg" Click="OpenSaleCorrections_Click"/>
+                        </StackPanel>
+                    </Border>
 
-                    <ListBox ItemsSource="{Binding Tenants}"
-                             SelectedItem="{Binding SelectedTenant}"
-                             Height="200"
-                             BorderThickness="1"
-                             BorderBrush="#DDD">
-                        <ListBox.ItemTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="{Binding Name}"/>
-                            </DataTemplate>
-                        </ListBox.ItemTemplate>
-                    </ListBox>
-
-                    <Button Content="Delete Tenant"
-                            Command="{Binding DeleteTenantCommand}"
-                            Margin="0,10,0,0"
-                            Padding="10"
-                            Background="#D9534F"
-                            Foreground="White"/>
-
-                    <Button Content="Add Tenant"
-                            Command="{Binding AddTenantCommand}"
-                            Margin="0,10,0,0"
-                            Padding="10"
-                            Background="#4CAF50"
-                            Foreground="White"/>
-                </StackPanel>
-
-                <!-- Rentals Section -->
-                <StackPanel Grid.Column="2">
-                    <TextBlock Text="Rentals"
-                               FontSize="16"
-                               FontWeight="Bold"
-                               Foreground="#333"
-                               Margin="0,0,0,10"/>
-
-                    <ListBox ItemsSource="{Binding Rentals}"
-                             Height="200"
-                             BorderThickness="1"
-                             BorderBrush="#DDD">
-                        <ListBox.ItemTemplate>
-                            <DataTemplate>
-                                <StackPanel>
-                                    <TextBlock Text="{Binding Tenant.Name, StringFormat='Tenant: {0}'}"
-                                               FontWeight="Bold"/>
-                                    <TextBlock Text="{Binding StartDate, StringFormat='Start: {0:yyyy-MM-dd}'}"
-                                               FontSize="12"/>
-                                </StackPanel>
-                            </DataTemplate>
-                        </ListBox.ItemTemplate>
-                    </ListBox>
-
-                    <Button Content="Add Rental"
-                            Command="{Binding AddRentalCommand}"
-                            Margin="0,10,0,0"
-                            Padding="10"
-                            Background="#2196F3"
-                            Foreground="White"/>
-                </StackPanel>
-            </Grid>
-
-            <StatusBar Margin="0,40,0,0">
-                <StatusBarItem>
+                    <Border Grid.Row="2" Grid.Column="2" Background="White" BorderBrush="#D8DEE7" BorderThickness="1" CornerRadius="8" Padding="16">
+                        <StackPanel>
+                            <TextBlock Text="Afregning" FontSize="20" FontWeight="Bold" Foreground="#25364A"/>
+                            <TextBlock Text="Beregn og gem lejerens månedsafregning." FontSize="13" Foreground="#68778A" Margin="0,4,0,8" TextWrapping="Wrap"/>
+                            <Button Content="Månedsafregning" Click="OpenSettlement_Click" Background="#7256A8" Foreground="White" BorderBrush="#7256A8"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+                <Border Background="#FFF8E8"
+                        BorderBrush="#F0E0B8"
+                        BorderThickness="1"
+                        CornerRadius="4"
+                        Padding="10"
+                        Margin="0,14,0,0">
                     <TextBlock Text="{Binding StatusMessage}"
-                               Foreground="#666"/>
-                </StatusBarItem>
-            </StatusBar>
-                    </StackPanel>
+                               Foreground="#5D523C"
+                               TextWrapping="Wrap"/>
+                </Border>
+</StackPanel>
         </ScrollViewer>
     </Grid>
 </Window>
+
+
+
+
+

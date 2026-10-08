@@ -9,16 +9,20 @@ namespace Reolmarket.ViewModels;
 
 public class MainViewModel : ViewModelBase
 {
-    private string _statusMessage = "Ready";
+    private string _statusMessage = "Klar";
     private Tenant? _selectedTenant;
+    private bool _useCustomRent;
+    private decimal _customRentPerShelf;
     private ObservableCollection<Tenant> _tenants;
     private ObservableCollection<Rental> _rentals;
     private readonly TenantRepository _tenantRepository = new();
     private readonly RentalRepository _rentalRepository = new();
+    private readonly SettlementRepository _settlementRepository = new();
     private readonly ShelfRepository _shelfRepository = new();
     public ICommand AddTenantCommand { get; }
     public ICommand DeleteTenantCommand { get; }
     public ICommand AddRentalCommand { get; }
+    public ICommand SaveCustomRentCommand { get; }
 
     public string StatusMessage
     {
@@ -28,7 +32,30 @@ public class MainViewModel : ViewModelBase
     public Tenant? SelectedTenant
     {
         get => _selectedTenant;
-        set => SetProperty(ref _selectedTenant, value);
+        set
+        {
+            if (SetProperty(ref _selectedTenant, value))
+            {
+                UseCustomRent = value?.UseCustomRent ?? false;
+                CustomRentPerShelf = value?.CustomRentPerShelf ?? 0m;
+                OnPropertyChanged(nameof(HasSelectedTenant));
+                LoadSelectedTenantDetails();
+            }
+        }
+    }
+
+    public bool HasSelectedTenant => SelectedTenant is not null;
+
+    public bool UseCustomRent
+    {
+        get => _useCustomRent;
+        set => SetProperty(ref _useCustomRent, value);
+    }
+
+    public decimal CustomRentPerShelf
+    {
+        get => _customRentPerShelf;
+        set => SetProperty(ref _customRentPerShelf, value);
     }
 
     public ObservableCollection<Tenant> Tenants
@@ -43,6 +70,9 @@ public class MainViewModel : ViewModelBase
         set => SetProperty(ref _rentals, value);
     }
 
+    public ObservableCollection<Rental> SelectedTenantRentals { get; } = new();
+    public ObservableCollection<Settlement> SelectedTenantSettlements { get; } = new();
+
     public MainViewModel()
     {
         _tenants = new ObservableCollection<Tenant>();
@@ -51,6 +81,7 @@ public class MainViewModel : ViewModelBase
         AddTenantCommand = new RelayCommand(ExecuteAddTenant);
         DeleteTenantCommand = new RelayCommand(ExecuteDeleteTenant);
         AddRentalCommand = new RelayCommand(ExecuteAddRental);
+        SaveCustomRentCommand = new RelayCommand(ExecuteSaveCustomRent);
 
         LoadTenants();
         LoadRentals();
@@ -91,6 +122,39 @@ public class MainViewModel : ViewModelBase
         }
     }
 
+    public void RefreshSelectedTenantDetails()
+    {
+        LoadSelectedTenantDetails();
+    }
+
+    private void LoadSelectedTenantDetails()
+    {
+        SelectedTenantRentals.Clear();
+        SelectedTenantSettlements.Clear();
+
+        if (SelectedTenant is null)
+        {
+            return;
+        }
+
+        foreach (Rental rental in Rentals.Where(r => r.TenantId == SelectedTenant.TenantId))
+        {
+            SelectedTenantRentals.Add(rental);
+        }
+
+        try
+        {
+            foreach (Settlement settlement in _settlementRepository.GetForTenant(SelectedTenant.TenantId))
+            {
+                SelectedTenantSettlements.Add(settlement);
+            }
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Kunne ikke hente lejerens afregningshistorik: {ex.Message}";
+        }
+    }
+
     private void ExecuteAddTenant(object? parameter)
     {
         var window = new AddTenantWindow();
@@ -110,6 +174,7 @@ public class MainViewModel : ViewModelBase
                 {
                     _tenantRepository.Add(newTenant);
                     Tenants.Add(newTenant);
+                    SelectedTenant = newTenant;
                     StatusMessage = $"Lejeren '{newTenant.Name}' blev gemt.";
                 }
                 catch (Exception ex)
@@ -119,22 +184,99 @@ public class MainViewModel : ViewModelBase
             }
         }
     }
-    private void ExecuteDeleteTenant(object? parameter)
+    private void ExecuteSaveCustomRent(object? parameter)
     {
-        Tenant? tenantToDelete = SelectedTenant;
-
-        if (tenantToDelete == null)
+        Tenant? tenant = SelectedTenant;
+        if (tenant is null)
         {
-            StatusMessage = "Vælg en lejer, der skal slettes.";
+            StatusMessage = "Vælg en lejer først.";
+            return;
+        }
+
+        if (UseCustomRent && CustomRentPerShelf <= 0m)
+        {
+            StatusMessage = "Særprisen skal være større end 0 kr. pr. reol pr. måned.";
+            return;
+        }
+
+        string priceDescription = UseCustomRent
+            ? $"Særprisen bliver {CustomRentPerShelf:N2} kr. pr. reol pr. måned"
+            : "særprisen bliver slået fra, og standardprisen efter antal reoler bliver brugt";
+        MessageBoxResult confirmation = MessageBox.Show(
+            $"Vil du gemme ændringen for {tenant.Name}? {priceDescription}. " +
+            "Prisen gælder for aktive reoler og fremtidige lejeaftaler, indtil den ændres igen.",
+            "Bekræft ændring af lejepris",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Question,
+            MessageBoxResult.No);
+
+        if (confirmation != MessageBoxResult.Yes)
+        {
+            StatusMessage = "Lejeprisen blev ikke ændret.";
             return;
         }
 
         try
         {
-            _tenantRepository.Delete(tenantToDelete.TenantId);
+            var pricingUpdate = new Tenant
+            {
+                TenantId = tenant.TenantId,
+                UseCustomRent = UseCustomRent,
+                CustomRentPerShelf = UseCustomRent ? CustomRentPerShelf : 0m
+            };
+            _tenantRepository.UpdateRentPricing(pricingUpdate, DateTime.Today);
+            tenant.UseCustomRent = pricingUpdate.UseCustomRent;
+            tenant.CustomRentPerShelf = pricingUpdate.CustomRentPerShelf;
+            LoadRentals();
+            LoadSelectedTenantDetails();
+            StatusMessage = UseCustomRent
+                ? $"Særprisen for {tenant.Name} er gemt."
+                : $"Særprisen for {tenant.Name} er slået fra.";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Kunne ikke gemme lejeprisen: {ex.Message}";
+        }
+    }
+
+    private void ExecuteDeleteTenant(object? parameter)
+    {
+        Tenant? tenantToDelete = SelectedTenant;
+
+        if (tenantToDelete is null)
+        {
+            StatusMessage = "Vælg en lejer, der skal slettes.";
+            return;
+        }
+
+        MessageBoxResult confirmation = MessageBox.Show(
+            $"Er du sikker på, at du vil slette lejeren '{tenantToDelete.Name}'?\n\nLejerens lejeaftaler og afregningshistorik bliver også slettet. Salgs- og returhistorik bevares i butikkens salgshistorik.\n\nHandlingen kan ikke fortrydes.",
+            "Bekræft sletning af lejer",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Warning,
+            MessageBoxResult.No);
+
+        if (confirmation != MessageBoxResult.Yes)
+        {
+            StatusMessage = "Sletning af lejeren blev annulleret.";
+            return;
+        }
+
+        try
+        {
+            int tenantId = tenantToDelete.TenantId;
+            _tenantRepository.Delete(tenantId);
+
+            foreach (Rental rental in Rentals
+                         .Where(r => r.TenantId == tenantId)
+                         .ToList())
+            {
+                Rentals.Remove(rental);
+            }
+
             Tenants.Remove(tenantToDelete);
             SelectedTenant = null;
-            StatusMessage = $"Lejeren '{tenantToDelete.Name}' blev slettet.";
+            StatusMessage = $"Lejeren '{tenantToDelete.Name}', lejeaftaler og afregningshistorik blev slettet.";
         }
         catch (Exception ex)
         {
@@ -156,7 +298,8 @@ public class MainViewModel : ViewModelBase
             return;
         }
 
-        var window = new AddRentalWindow(Tenants, shelves, Rentals);
+        Tenant? requestedTenant = parameter as Tenant;
+        var window = new AddRentalWindow(Tenants, shelves, Rentals, requestedTenant);
 
         if (window.ShowDialog() != true)
         {
@@ -208,11 +351,45 @@ public class MainViewModel : ViewModelBase
                 TenantId = viewModel.TenantId,
                 Tenant = tenant,
                 ShelfId = viewModel.ShelfId,
+                Shelf = shelves.FirstOrDefault(s => s.ShelfId == viewModel.ShelfId),
                 StartDate = viewModel.StartDate,
                 EndDate = viewModel.EndDate,
                 MonthlyRent = viewModel.MonthlyRent,
                 PaymentMethod = viewModel.SelectedPaymentMethod
             };
+
+            List<Rental> rentalsAffectedByNewPrice = Rentals
+                .Where(existingRental =>
+                    existingRental.TenantId == newRental.TenantId &&
+                    existingRental.IsActive(newRental.StartDate.Date))
+                .ToList();
+
+            string endDateText = newRental.EndDate.HasValue
+                ? newRental.EndDate.Value.ToString("dd-MM-yyyy")
+                : "ingen slutdato";
+            string paymentMethodText = newRental.PaymentMethod switch
+            {
+                PaymentMethod.Cash => "Kontant",
+                PaymentMethod.MobilePay => "MobilePay",
+                PaymentMethod.Card => "Kort",
+                _ => "Ukendt"
+            };
+            string repricingText = rentalsAffectedByNewPrice.Count == 0
+                ? string.Empty
+                : $"\n\nPrisen på {rentalsAffectedByNewPrice.Count} eksisterende aktive reol(er) ændres også til {newRental.MonthlyRent:N0} kr. pr. måned pr. reol.";
+
+            MessageBoxResult confirmation = MessageBox.Show(
+                $"Opret lejeaftale for {tenant?.Name}, reol {newRental.Shelf?.ShelfNumber}, fra {newRental.StartDate:dd-MM-yyyy} til {endDateText}?\n\nPris: {newRental.MonthlyRent:N0} kr. pr. måned pr. reol\nBetalingsform: {paymentMethodText}{repricingText}",
+                "Bekræft lejeaftale",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question,
+                MessageBoxResult.No);
+
+            if (confirmation != MessageBoxResult.Yes)
+            {
+                StatusMessage = "Lejeaftalen blev ikke oprettet.";
+                return;
+            }
 
             _rentalRepository.AddAndRepriceActiveRentals(newRental);
 
@@ -226,6 +403,7 @@ public class MainViewModel : ViewModelBase
             }
 
             Rentals.Add(newRental);
+            LoadSelectedTenantDetails();
 
             StatusMessage =
                 $"Lejeaftalen blev gemt med ID {newRental.RentalId}.";
@@ -237,4 +415,8 @@ public class MainViewModel : ViewModelBase
         }
     }
 }
+
+
+
+
 

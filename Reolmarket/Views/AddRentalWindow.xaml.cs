@@ -10,7 +10,8 @@ public partial class AddRentalWindow : Window
     public AddRentalWindow(
     IEnumerable<Tenant> tenants,
     IEnumerable<Shelf> shelves,
-    IEnumerable<Rental> existingRentals)
+    IEnumerable<Rental> existingRentals,
+    Tenant? selectedTenant = null)
     {
         InitializeComponent();
 
@@ -20,6 +21,10 @@ public partial class AddRentalWindow : Window
             existingRentals);
 
         DataContext = viewModel;
+        if (selectedTenant is not null)
+        {
+            viewModel.TenantId = selectedTenant.TenantId;
+        }
 
         viewModel.RequestClose += () =>
         {
@@ -28,3 +33,4 @@ public partial class AddRentalWindow : Window
         };
     }
 }
+

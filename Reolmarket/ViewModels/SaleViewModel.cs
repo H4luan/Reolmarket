@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Windows;
 using System.Windows.Input;
 using Reolmarket.Domain;
 using Reolmarket.Infrastructure;
@@ -173,6 +174,22 @@ public class SalesViewModel : ViewModelBase
         if (CashReceived < CartTotal)
         {
             StatusMessage = "Det modtagne beløb er mindre end totalen.";
+            return;
+        }
+
+        string saleItems = string.Join(
+            Environment.NewLine,
+            CartLines.Select(line => $"{line.Quantity} × {line.Product?.Name ?? "Ukendt produkt"}"));
+        MessageBoxResult confirmation = MessageBox.Show(
+            $"Kontrollér salget:\n\n{saleItems}\n\nMedarbejder: {SelectedEmployee.Name}\nTotal: {CartTotal:N2} kr.\nKontant modtaget: {CashReceived:N2} kr.\nByttepenge: {ChangeDue:N2} kr.\n\nNår salget gemmes, bliver lageret reduceret. Vil du gennemføre salget?",
+            "Bekræft salg",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Question,
+            MessageBoxResult.No);
+
+        if (confirmation != MessageBoxResult.Yes)
+        {
+            StatusMessage = "Salget blev ikke gemt.";
             return;
         }
 

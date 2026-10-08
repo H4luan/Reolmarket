@@ -12,6 +12,10 @@ namespace Reolmarket.Domain
 
         public string Email { get; set; } = string.Empty;
 
+        public bool UseCustomRent { get; set; }
+
+        public decimal CustomRentPerShelf { get; set; }
+
         public List<Rental> Rentals { get; set; } = new();
 
         public List<Settlement> Settlements { get; set; } = new();

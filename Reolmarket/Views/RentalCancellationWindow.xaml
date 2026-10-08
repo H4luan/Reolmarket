@@ -21,7 +21,7 @@
                    Margin="0,0,0,8"/>
 
         <TextBlock Grid.Row="1"
-                   Text="Casen viser opsigelse før den 20. i måneden. Lejeaftalen gælder fortsat til og med slutdatoen."
+                   Text="Opsigelse inden den 20. giver normalt slutdato ved udgangen af næste måned. Indgives opsigelsen den 20. eller senere, rykkes slutdatoen én måned. Lejeaftalen fortsætter til og med den valgte slutdato."
                    TextWrapping="Wrap"
                    Margin="0,0,0,14"/>
 

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -10,9 +10,21 @@ namespace Reolmarket.Domain
 
         public int ShelfNumber { get; set; }
 
-        public ShelfLayout Layout { get; set; }
+                public ShelfLayout Layout { get; set; }
 
-        public string Location { get; set; } = string.Empty;
+        public string LayoutDisplayName => Layout switch
+        {
+            ShelfLayout.SixShelves => "6 hylder",
+            ShelfLayout.ThreeShelvesAndRail => "3 hylder + bøjlestang",
+            _ => "Ukendt indretning"
+        };
+
+        public string RentalSelectionDisplayName =>
+            string.IsNullOrWhiteSpace(Comment)
+                ? $"Reol {ShelfNumber} ({LayoutDisplayName})"
+                : $"Reol {ShelfNumber} ({LayoutDisplayName}) - {Comment}";
+
+        public string Comment { get; set; } = string.Empty;
 
         public List<Rental> Rentals { get; set; } = new();
 
@@ -26,3 +38,4 @@ namespace Reolmarket.Domain
         public bool IsAvailableNow => IsAvailable(DateTime.Today);
     }
 }
+

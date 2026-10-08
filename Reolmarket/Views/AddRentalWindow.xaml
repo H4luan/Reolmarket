@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="Add New Rental"
+        Title="Opret lejeaftale"
         Height="680"
         Width="400"
         WindowStartupLocation="CenterOwner"
@@ -13,13 +13,13 @@
     <Grid Margin="20">
         <StackPanel VerticalAlignment="Top">
 
-            <TextBlock Text="Add New Rental"
+            <TextBlock Text="Opret lejeaftale"
                        FontSize="16"
                        FontWeight="Bold"
                        Margin="0,0,0,20"/>
 
             <StackPanel Margin="0,0,0,15">
-                <TextBlock Text="Tenant:"
+                <TextBlock Text="Lejer:"
                            Margin="0,0,0,5"
                            FontWeight="Bold"/>
 
@@ -31,12 +31,12 @@
             </StackPanel>
 
             <StackPanel Margin="0,0,0,15">
-                <TextBlock Text="Shelf:"
+                <TextBlock Text="Reol:"
                            Margin="0,0,0,5"
                            FontWeight="Bold"/>
 
                 <ComboBox ItemsSource="{Binding Shelves}"
-                          DisplayMemberPath="ShelfNumber"
+                          DisplayMemberPath="RentalSelectionDisplayName"
                           SelectedValuePath="ShelfId"
                           SelectedValue="{Binding ShelfId, UpdateSourceTrigger=PropertyChanged}"
                           Height="35"/>
@@ -47,7 +47,7 @@
                FontWeight="Bold"/>
 
                 <ComboBox ItemsSource="{Binding NeighborShelves}"
-              DisplayMemberPath="ShelfNumber"
+              DisplayMemberPath="RentalSelectionDisplayName"
               SelectedItem="{Binding SelectedNeighborShelf}"
               Height="35"/>
 
@@ -58,7 +58,7 @@
 
 
             <StackPanel Margin="0,0,0,15">
-                <TextBlock Text="Start Date:"
+                <TextBlock Text="Startdato:"
                            Margin="0,0,0,5"
                            FontWeight="Bold"/>
 
@@ -70,7 +70,7 @@
             </StackPanel>
 
             <StackPanel Margin="0,0,0,15">
-                <TextBlock Text="End Date (Optional):"
+                <TextBlock Text="Slutdato (valgfri):"
                            Margin="0,0,0,5"
                            FontWeight="Bold"/>
 
@@ -83,11 +83,14 @@
 
             <StackPanel Margin="0,0,0,15">
                 <TextBlock Text="Betalingsform:" Margin="0,0,0,5" FontWeight="Bold"/>
-                <ComboBox ItemsSource="{Binding PaymentMethods}" SelectedItem="{Binding SelectedPaymentMethod}" Height="35"/>
+                <ComboBox ItemsSource="{Binding PaymentMethods}"
+                          DisplayMemberPath="DisplayName"
+                          SelectedItem="{Binding SelectedPaymentMethodOption}"
+                          Height="35"/>
             </StackPanel>
 
             <StackPanel Margin="0,0,0,20">
-                <TextBlock Text="Monthly rent:"
+                <TextBlock Text="Månedlig leje:"
                Margin="0,0,0,5"
                FontWeight="Bold"/>
 
@@ -100,7 +103,7 @@
                         HorizontalAlignment="Right"
                         Height="40">
 
-                <Button Content="OK"
+                <Button Content="Gem"
                         Command="{Binding OkCommand}"
                         Width="80"
                         Margin="0,0,10,0"
@@ -108,7 +111,7 @@
                         Foreground="White"
                         Padding="5"/>
 
-                <Button Content="Cancel"
+                <Button Content="Annuller"
                         Command="{Binding CancelCommand}"
                         Width="80"
                         Background="#f44336"

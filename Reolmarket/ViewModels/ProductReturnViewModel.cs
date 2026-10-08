@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Windows;
 using System.Windows.Input;
 using Reolmarket.Domain;
 using Reolmarket.Infrastructure;
@@ -85,6 +86,20 @@ public class ProductReturnViewModel : ViewModelBase
             QuantityToReturn > SelectedSaleLine.RemainingQuantity)
         {
             StatusMessage = "Indtast et gyldigt returantal.";
+            return;
+        }
+
+        decimal refundAmount = SelectedSaleLine.SalePrice * QuantityToReturn;
+        MessageBoxResult confirmation = MessageBox.Show(
+            $"Vil du registrere retur af {QuantityToReturn} stk. '{SelectedSaleLine.ProductName}'?\n\nReturbeløb: {refundAmount:N2} kr.\nLageret bliver øget med {QuantityToReturn} stk.",
+            "Bekræft retur",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Question,
+            MessageBoxResult.No);
+
+        if (confirmation != MessageBoxResult.Yes)
+        {
+            StatusMessage = "Returen blev ikke gemt.";
             return;
         }
 

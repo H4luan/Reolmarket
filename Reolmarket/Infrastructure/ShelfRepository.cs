@@ -41,7 +41,7 @@ namespace Reolmarket.Infrastructure
                     ShelfNumber = reader.IsDBNull(1)
                     ? 0
                     : reader.GetInt32(1),
-                    Location = reader.IsDBNull(2)
+                    Comment = reader.IsDBNull(2)
                     ? string.Empty
                     : reader.GetString(2),
                     Layout = GetLayout(numberOfShelves, numberOfClothingRails) });
@@ -67,11 +67,11 @@ namespace Reolmarket.Infrastructure
                 INSERT INTO Shelf (Number, Location, NumberOfShelves, NumberOfClothingRails)
                 OUTPUT INSERTED.ShelfID
                 VALUES
-                (@Number, @Location, @NumberOfShelves, @NumberOfClothingRails);
+                (@Number, @Comment, @NumberOfShelves, @NumberOfClothingRails);
                 """;
 
             command.Parameters.AddWithValue("@Number", shelf.ShelfNumber);
-            command.Parameters.AddWithValue("@Location", shelf.Location);
+            command.Parameters.AddWithValue("@Comment", shelf.Comment);
             command.Parameters.AddWithValue("@NumberOfShelves", numberOfShelves);
             command.Parameters.AddWithValue("@NumberOfClothingRails", numberOfClothingRails);
 
@@ -96,7 +96,7 @@ namespace Reolmarket.Infrastructure
                 """
                 UPDATE Shelf
                 SET Number = @Number,
-                Location = @Location,
+                Location = @Comment,
                 NumberOfShelves  = @NumberOfShelves,
                 NumberOfClothingRails = @NumberOfClothingRails
                 WHERE ShelfID = @ShelfID;
@@ -104,7 +104,7 @@ namespace Reolmarket.Infrastructure
 
             command.Parameters.AddWithValue("@ShelfID", shelf.ShelfId);
             command.Parameters.AddWithValue("@Number", shelf.ShelfNumber);
-            command.Parameters.AddWithValue("@Location", shelf.Location);
+            command.Parameters.AddWithValue("@Comment", shelf.Comment);
             command.Parameters.AddWithValue("@NumberOfShelves", numberOfShelves);
             command.Parameters.AddWithValue(
                 "@NumberOfClothingRails",

@@ -81,4 +81,21 @@ public partial class MainWindow : Window
         var window = new SaleCorrectionsWindow { Owner = this };
         window.ShowDialog();
     }
+    private void OpenTenantRentalManagement_Click(object sender, RoutedEventArgs e)
+    {
+        if (DataContext is MainViewModel viewModel)
+        {
+            viewModel.RefreshSelectedTenantDetails();
+        }
+
+        var window = new TenantsAndRentalsWindow
+        {
+            Owner = this,
+            DataContext = DataContext
+        };
+
+        window.ShowDialog();
+    }
 }
+
+

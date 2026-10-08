@@ -16,7 +16,8 @@ public class AddRentalViewModel : ViewModelBase
     private DateTime _startDate = DateTime.Today;
     private DateTime? _endDate;
     private decimal _monthlyRent;
-    private PaymentMethod _selectedPaymentMethod = PaymentMethod.Cash;
+    private PaymentMethodOption _selectedPaymentMethodOption =
+        new(PaymentMethod.Cash, "Kontant");
     private bool _dialogResult;
     private Shelf? _selectedNeighborShelf;
     private string _neighborMessage =
@@ -25,14 +26,19 @@ public class AddRentalViewModel : ViewModelBase
     public ObservableCollection<Tenant> Tenants { get; }
     public ObservableCollection<Shelf> Shelves { get; }
     public ObservableCollection<Shelf> NeighborShelves { get; } = new();
-    public ObservableCollection<PaymentMethod> PaymentMethods { get; } = new()
-    { PaymentMethod.Cash, PaymentMethod.MobilePay };
-
-    public PaymentMethod SelectedPaymentMethod
+    public ObservableCollection<PaymentMethodOption> PaymentMethods { get; } = new()
     {
-        get => _selectedPaymentMethod;
-        set => SetProperty(ref _selectedPaymentMethod, value);
+        new(PaymentMethod.Cash, "Kontant"),
+        new(PaymentMethod.MobilePay, "MobilePay")
+    };
+
+    public PaymentMethodOption SelectedPaymentMethodOption
+    {
+        get => _selectedPaymentMethodOption;
+        set => SetProperty(ref _selectedPaymentMethodOption, value);
     }
+
+    public PaymentMethod SelectedPaymentMethod => SelectedPaymentMethodOption.Value;
 
 
     public Shelf? SelectedNeighborShelf
@@ -136,6 +142,7 @@ public class AddRentalViewModel : ViewModelBase
         Tenants = new ObservableCollection<Tenant>(tenants);
         Shelves = new ObservableCollection<Shelf>(shelves);
         _existingRentals = existingRentals.ToList();
+        _selectedPaymentMethodOption = PaymentMethods[0];
 
         OkCommand = new RelayCommand(ExecuteOk, CanExecuteOk);
         CancelCommand = new RelayCommand(ExecuteCancel);
@@ -146,6 +153,13 @@ public class AddRentalViewModel : ViewModelBase
         if (TenantId <= 0)
         {
             MonthlyRent = 0;
+            return;
+        }
+
+        Tenant? tenant = Tenants.FirstOrDefault(item => item.TenantId == TenantId);
+        if (tenant?.UseCustomRent == true)
+        {
+            MonthlyRent = tenant.CustomRentPerShelf;
             return;
         }
 
@@ -240,3 +254,5 @@ public class AddRentalViewModel : ViewModelBase
             : $"Ledige naboreoler: {string.Join(", ", NeighborShelves.Select(shelf => shelf.ShelfNumber))}.";
     }
 }
+
+public sealed record PaymentMethodOption(PaymentMethod Value, string DisplayName);

@@ -8,9 +8,23 @@ public class AvailableShelvesViewModel : ViewModelBase
 {
     private readonly ShelfRepository _shelfRepository = new();
     private readonly RentalRepository _rentalRepository = new();
+    private DateTime? _selectedDate = DateTime.Today;
     private string _statusMessage = string.Empty;
 
     public ObservableCollection<AvailableShelfInfo> Shelves { get; } = new();
+
+    public DateTime? SelectedDate
+    {
+        get => _selectedDate;
+        set
+        {
+            DateTime? date = value?.Date ?? DateTime.Today;
+            if (SetProperty(ref _selectedDate, date))
+            {
+                LoadAvailableShelves();
+            }
+        }
+    }
 
     public string StatusMessage
     {
@@ -28,21 +42,22 @@ public class AvailableShelvesViewModel : ViewModelBase
         try
         {
             Shelves.Clear();
+            DateTime selectedDate = SelectedDate?.Date ?? DateTime.Today;
             List<Shelf> allShelves = _shelfRepository.GetAll();
             List<Rental> allRentals = _rentalRepository.GetAll();
 
             foreach (Shelf shelf in allShelves
                 .Where(shelf => !allRentals.Any(rental =>
                     rental.ShelfId == shelf.ShelfId &&
-                    rental.IsActive(DateTime.Today)))
+                    rental.IsActive(selectedDate)))
                 .OrderBy(shelf => shelf.ShelfNumber))
             {
                 Shelves.Add(new AvailableShelfInfo
                 {
                     ShelfNumber = shelf.ShelfNumber,
-                    Location = string.IsNullOrWhiteSpace(shelf.Location)
-                        ? "Placering ikke angivet"
-                        : shelf.Location,
+                    Comment = string.IsNullOrWhiteSpace(shelf.Comment)
+                        ? "—"
+                        : shelf.Comment,
                     LayoutDescription = shelf.Layout switch
                     {
                         ShelfLayout.SixShelves => "6 hylder",
@@ -52,7 +67,7 @@ public class AvailableShelvesViewModel : ViewModelBase
                 });
             }
 
-            StatusMessage = $"{Shelves.Count} ledige reoler pr. dags dato.";
+            StatusMessage = $"{Shelves.Count} ledige reoler pr. {selectedDate:dd-MM-yyyy}.";
         }
         catch (Exception ex)
         {

@@ -2,56 +2,38 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Ledige reoler og priser"
-        Height="620"
-        Width="850"
+        Height="650"
+        Width="1000"
+        MinHeight="520"
+        MinWidth="820"
         WindowStartupLocation="CenterOwner">
     <Grid Margin="18">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-
-        <TextBlock Grid.Row="0"
-                   Text="Ledige reoler"
-                   FontSize="22"
-                   FontWeight="Bold"
-                   Margin="0,0,0,12"/>
-
-        <Border Grid.Row="1"
-                Padding="10"
-                Margin="0,0,0,12"
-                Background="#F3F5F7">
+        <TextBlock Grid.Row="0" Text="Ledige reoler" FontSize="22" FontWeight="Bold" Margin="0,0,0,12"/>
+        <Border Grid.Row="1" Padding="10" Margin="0,0,0,12" Background="#F3F5F7">
             <StackPanel>
-                <TextBlock Text="Leje pr. reol: 1 reol 850 kr./måned · 2-3 reoler 825 kr./måned pr. reol · 4 eller flere 800 kr./måned pr. reol"
-                           TextWrapping="Wrap"
-                           Margin="0,0,0,5"/>
-                <TextBlock Text="Kommission: 10 % af salget. Varer mærkes med reolnummer og pris."
-                           TextWrapping="Wrap"/>
+                <TextBlock Text="Leje pr. reol: 1 reol 850 kr./måned · 2-3 reoler 825 kr./måned pr. reol · 4 eller flere 800 kr./måned pr. reol" TextWrapping="Wrap" Margin="0,0,0,5"/>
+                <TextBlock Text="Kommission: 10 % af salget. Varer mærkes med reolnummer og pris." TextWrapping="Wrap"/>
             </StackPanel>
         </Border>
-
-        <DataGrid Grid.Row="2"
-                  ItemsSource="{Binding Shelves}"
-                  AutoGenerateColumns="False"
-                  IsReadOnly="True"
-                  CanUserAddRows="False">
+        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,10">
+            <TextBlock Text="Vis ledighed pr. dato:" VerticalAlignment="Center" Margin="0,0,8,0"/>
+            <DatePicker Width="150" SelectedDate="{Binding SelectedDate, UpdateSourceTrigger=PropertyChanged}"/>
+        </StackPanel>
+        <DataGrid Grid.Row="3" ItemsSource="{Binding Shelves}" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Reolnummer / placering"
-                                    Binding="{Binding ShelfNumber}"
-                                    Width="110"/>
-                <DataGridTextColumn Header="Indretning"
-                                    Binding="{Binding LayoutDescription}"
-                                    Width="210"/>
-                <DataGridTextColumn Header="Pris ved leje af én"
-                                    Binding="{Binding MonthlyRentForOne, StringFormat={}{0:N0} kr./måned}"
-                                    Width="180"/>
+                <DataGridTextColumn Header="Reolnummer" Binding="{Binding ShelfNumber}" Width="100"/>
+                <DataGridTextColumn Header="Kommentar" Binding="{Binding Comment}" Width="*"/>
+                <DataGridTextColumn Header="Indretning" Binding="{Binding LayoutDescription}" Width="220"/>
+                <DataGridTextColumn Header="Pris ved leje af én" Binding="{Binding MonthlyRentForOne, StringFormat={}{0:N0} kr./måned}" Width="180"/>
             </DataGrid.Columns>
         </DataGrid>
-
-        <TextBlock Grid.Row="3"
-                   Text="{Binding StatusMessage}"
-                   Margin="0,12,0,0"/>
+        <TextBlock Grid.Row="4" Text="{Binding StatusMessage}" Margin="0,12,0,0"/>
     </Grid>
 </Window>
