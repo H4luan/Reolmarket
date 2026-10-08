@@ -7,15 +7,16 @@ namespace Reolmarket.Infrastructure
 {
     public static class  DatabaseConnection
     {
-        private const string ConnectionString =
-             "Server=localhost;Database=ShelfMarket;Integrated Security=True;Encrypt=True;TrustServerCertificate=True;";
+        private static readonly string ServerName =
+            Environment.GetEnvironmentVariable("REOLMARKET_SQL_SERVER") ?? "localhost";
+        private const string ConnectionOptions =
+            "Integrated Security=True;Encrypt=True;TrustServerCertificate=True;";
 
-        public static SqlConnection CreateConnection()
+        public static SqlConnection CreateConnection() =>
+            new($"Server={ServerName};Database=ShelfMarket;{ConnectionOptions}");
 
-
-        { 
-           return new SqlConnection(ConnectionString);
-        }
+        public static SqlConnection CreateMasterConnection() =>
+            new($"Server={ServerName};Database=master;{ConnectionOptions}");
 
     }
     
